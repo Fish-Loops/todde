@@ -1,50 +1,43 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Todde Design Language Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Cohesive Visual Identity
+Every surface reflects the Todde brand palette, typographic scale, and spacing rhythm. Colors, fonts, and elevation tokens are reused—not redefined—so that users can build familiarity as they move across the site.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Component-Driven Experience
+Interfaces are composed from the shared component library. New UI elements extend or adapt existing patterns before introducing bespoke solutions, ensuring interaction affordances feel predictable everywhere.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Accessible & Responsive by Default
+Each component meets WCAG 2.2 AA contrast, keyboard, and screen-reader expectations and gracefully adapts from mobile to widescreen layouts. No release ships without verifying accessibility across the supported breakpoints.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Consistent Voice & Content Hierarchy
+Headings, body copy, and microcopy follow the same tone, capitalization, and hierarchy rules. Layouts highlight primary actions consistently, reinforcing user trust and reducing cognitive load.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Governed Evolution
+Design tokens, components, and documentation change through a transparent proposal workflow. Versioned artifacts and changelogs keep engineering, design, and content teams synchronized.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Design Language Standards
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Color System**: Primary (`#1F4B99`), secondary (`#F2A900`), neutral grayscale, and success/error palettes live in the design tokens (`tokens/design.json`). Updates require regression checks against contrast ratios and affected components.
+- **Typography**: Use the `Inter` font family. Semantic HTML tags map to predefined token sizes (`--font-h1` through `--font-caption`). Weight changes outside the scale must be approved during design review.
+- **Spacing & Layout**: Apply the 4px spacing scale (`4 · n`). Grid breakpoints: 0–599px (mobile), 600–1023px (tablet), 1024px+ (desktop). Components expose layout props rather than inline spacing overrides.
+- **Iconography & Illustration**: Leverage the shared SVG set located in `static/icons`. Custom icons adopt the same stroke width, corner radius, and grid. Illustrations adhere to the three-tone palette plus neutrals.
+- **Motion**: Animations use the easing presets defined in `--ease-standard` and `--ease-emphasized`. Duration options are 100ms, 200ms, 300ms, and 500ms. Motion must reinforce hierarchy and stay within accessibility guidelines (reduced motion support included).
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Delivery Workflow & Quality Gates
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+1. **Discovery**: Any design change begins with a Figma exploration linked to the associated ticket. Define the target component(s) and tokens impacted.
+2. **Implementation Plan**: Engineers outline updates to shared styles, React/Django templates, or CSS modules. Plans include accessibility checks and responsive behaviour notes.
+3. **Build & Review**: Pull requests must include before/after screenshots (mobile + desktop), Storybook/preview links when available, and confirmation that automated visual regression and unit tests pass.
+4. **Validation**: Run linting, unit tests, and axe-core scans. Reviewers verify adherence to the constitution before approving merges.
+5. **Documentation**: Update `docs/design-system.md` and component READMEs with usage guidance, examples, and any migration steps.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes ad-hoc design decisions. Exceptions require a written RFC documenting rationale, impact, and rollback.
+- Amendments follow the proposal workflow: draft → design council review → engineering sign-off → documentation update → version release.
+- Compliance is checked during design handoff, code review, and QA. Non-compliant work is blocked until brought into alignment.
+- Repository hygiene keeps operational directories private. The `.specify`, `.vscode`, and `.github` folders are workspace-scoped and must stay untracked in the public git history. Collaborators maintain local copies and document relevant guidance instead of committing these directories.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.1 | **Ratified**: 2025-10-11 | **Last Amended**: 2025-10-12

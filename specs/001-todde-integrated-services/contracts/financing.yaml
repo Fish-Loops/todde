@@ -1,0 +1,128 @@
+openapi: 3.1.0
+info:
+  title: Todde Financing API
+  version: 0.1.0
+  description: Submission and status tracking for Todde financing inquiries.
+servers:
+  - url: https://www.todde.com
+paths:
+  /api/financing/inquiries:
+    post:
+      summary: Submit a financing inquiry
+      operationId: createFinancingInquiry
+      tags: [Financing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinancingInquiryCreate'
+      responses:
+        '201':
+          description: Inquiry accepted and queued for follow-up email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancingInquiryResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Rate limit exceeded (per-IP threshold reached)
+        '500':
+          description: Unexpected error (email queue unavailable)
+    options:
+      summary: CORS preflight
+      responses:
+        '204':
+          description: OK
+  /api/financing/inquiries/{id}:
+    get:
+      summary: Retrieve inquiry status (internal use)
+      tags: [Financing]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current status payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancingInquiryResponse'
+        '404':
+          description: Inquiry not found
+components:
+  schemas:
+    FinancingInquiryCreate:
+      type: object
+      required:
+        [fullName, email, phoneNumber, monthlyIncome, consent, preferredVehicleSlug]
+      properties:
+        fullName:
+          type: string
+          maxLength: 128
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          example: '+2348012345678'
+        monthlyIncome:
+          type: number
+          minimum: 50000
+        employmentStatus:
+          type: string
+          enum: [employed, self-employed, student, other]
+        preferredVehicleSlug:
+          type: string
+          description: Optional slug referencing VehicleListing
+        additionalNotes:
+          type: string
+          maxLength: 500
+        consent:
+          type: boolean
+          const: true
+      description: Payload submitted from financing CTA and hero forms.
+    FinancingInquiryResponse:
+      type: object
+      required: [id, status, message]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [submitted, contacted, in_review, approved, declined]
+        message:
+          type: string
+          description: Branded confirmation copy displayed on-page.
+        emailQueued:
+          type: boolean
+          description: Indicates whether Celery dispatched the AnyMail job.
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required: [message, errors]
+  securitySchemes:
+    rateLimitToken:
+      type: apiKey
+      in: header
+      name: X-RateLimit-Token
+security:
+  - rateLimitToken: []
