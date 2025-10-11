@@ -1,0 +1,34 @@
+{% load static %}
+{% load marketing_icons %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{{ meta.title|default:"Todde Integrated Services" }}{% endblock %}</title>
+    <meta
+      name="description"
+      content="{% block meta_description %}{{ meta.description|default:"Todde delivers flexible car ownership with financing designed for Nigerians." }}{% endblock %}"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/todde.css' %}" />
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="bg-todde-neutral text-todde-dark antialiased">
+    <div class="min-h-screen flex flex-col">
+      {% include 'partials/header.html' %}
+      <main id="main-content" class="flex-1">
+        {% block content %}{% endblock %}
+      </main>
+      {% include 'partials/footer.html' %}
+    </div>
+    <script src="{% static 'js/flowbite.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

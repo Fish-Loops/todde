@@ -1,0 +1,59 @@
+{% load marketing_icons %}
+<footer class="bg-todde-blue text-white">
+  <div class="container grid gap-10 py-14 md:grid-cols-4">
+    <div class="space-y-4">
+      <span class="text-2xl font-bold">Todde Integrated Services</span>
+      <p class="text-sm text-white/70">
+        Todde empowers Nigerians to own quality vehicles with transparent pricing and flexible financing tailored to individual lifestyles.
+      </p>
+      <div class="flex items-center gap-3 text-white/70">
+        {% marketing_icon 'heroicons:envelope' 'w-5 h-5' %}
+        <a href="mailto:hello@todde.africa" class="hover:text-todde-blue-light">hello@todde.africa</a>
+      </div>
+      <div class="flex items-center gap-3 text-white/70">
+        {% marketing_icon 'heroicons:phone' 'w-5 h-5' %}
+        <a href="tel:+23417001234" class="hover:text-todde-blue-light">+234 1700 1234</a>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold">Company</h3>
+      <ul class="mt-4 space-y-2 text-white/70">
+  <li><a href="/#about" class="hover:text-todde-blue-light">About Todde</a></li>
+  <li><a href="/#values" class="hover:text-todde-blue-light">Our Values</a></li>
+  <li><a href="/financing/" class="hover:text-todde-blue-light">Financing</a></li>
+  <li><a href="/#contact" class="hover:text-todde-blue-light">Contact Us</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold">Media & Partners</h3>
+      <ul class="mt-4 space-y-2 text-white/70">
+  <li><a href="mailto:press@todde.africa" class="hover:text-todde-blue-light">Press Resources</a></li>
+  <li><a href="mailto:partners@todde.africa" class="hover:text-todde-blue-light">Partner with Todde</a></li>
+  <li><a href="/#inventory" class="hover:text-todde-blue-light">Certified Inventory</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold">Follow Todde</h3>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href="https://www.linkedin.com" class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">
+          {% marketing_icon 'heroicons:globe-alt' 'w-5 h-5' %}
+          <span>LinkedIn</span>
+        </a>
+        <a href="https://www.instagram.com" class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">
+          {% marketing_icon 'heroicons:bolt' 'w-5 h-5' %}
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.twitter.com" class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20">
+          {% marketing_icon 'heroicons:sparkles' 'w-5 h-5' %}
+          <span>X (Twitter)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="bg-todde-jet/80 py-4">
+    <div class="container flex flex-col items-center justify-between gap-2 text-xs text-white/60 md:flex-row">
+  <p>© {% now "Y" %} Todde Integrated Services. All rights reserved.</p>
+      <p>Designed for clarity, trust, and empowerment.</p>
+    </div>
+  </div>
+</footer>

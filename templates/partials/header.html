@@ -1,0 +1,97 @@
+{% load marketing_icons %}
+<header class="sticky top-0 z-50 bg-white shadow-lg">
+  <!-- Top Info Bar -->
+  <div class="border-b border-gray-200 bg-todde-jet text-white">
+    <div class="container">
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-4 text-xs text-white/90 md:gap-6">
+          <div class="flex items-center gap-2">
+            {% marketing_icon 'heroicons:map-pin' 'h-3.5 w-3.5 text-todde-blue' %}
+            <span class="hidden md:inline">Plot 24, Admiralty Rd, Lekki, Lagos</span>
+            <span class="inline md:hidden">Lagos</span>
+          </div>
+          <div class="flex items-center gap-2">
+            {% marketing_icon 'heroicons:envelope' 'h-3.5 w-3.5 text-todde-blue' %}
+            <a href="mailto:support@todde.africa" class="transition hover:text-todde-blue">support@todde.africa</a>
+          </div>
+          <div class="hidden items-center gap-2 lg:flex">
+            {% marketing_icon 'heroicons:clock' 'h-3.5 w-3.5 text-todde-blue' %}
+            <span>Mon-Sat: 8AM-6PM</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <a href="tel:+2347010012345" class="inline-flex items-center gap-1.5 bg-todde-blue px-3 py-1.5 text-xs font-semibold transition hover:bg-todde-blue-dark">
+            {% marketing_icon 'heroicons:phone' 'h-3.5 w-3.5' %}
+            <span>Call Us</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="bg-white">
+    <div class="container">
+      <div class="flex items-center gap-8 py-4">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-3 flex-shrink-0">
+          <div class="flex h-12 w-12 items-center justify-center bg-todde-blue">
+            <span class="text-2xl font-bold text-white">T</span>
+          </div>
+          <span class="text-xl font-bold tracking-tight text-gray-900">Todde</span>
+        </a>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1">
+          <ul class="flex items-center gap-8 text-sm font-medium text-gray-900">
+            {% if nav_links %}
+              {% for nav_link in nav_links %}
+                <li>
+                  <a href="{{ nav_link.href }}" class="transition duration-150 hover:text-todde-blue">{{ nav_link.label }}</a>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li>
+                <a href="/cars/" class="transition duration-150 hover:text-todde-blue">Inventory</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        <!-- Right Section: Search -->
+        <div class="flex flex-shrink-0 items-center">
+          <form action="/#inventory" method="get" class="w-full max-w-sm md:max-w-md xl:max-w-lg">
+            <label for="default-search" class="sr-only">Search</label>
+            <div class="group relative flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-4 pr-2 py-1.5 shadow-lg transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl focus-within:border-todde-blue focus-within:shadow-2xl focus-within:ring-2 focus-within:ring-todde-blue/20 overflow-hidden">
+              <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors group-focus-within:bg-todde-blue/10 group-focus-within:text-todde-blue">
+                <svg class="h-4 w-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                </svg>
+              </span>
+              <input
+                type="search"
+                id="default-search"
+                name="q"
+                class="flex-1 min-w-0 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+                placeholder="Search cars, parts, services..."
+                autocomplete="off"
+                required
+              />
+              <div class="flex flex-shrink-0 items-center gap-2">
+                <span class="hidden text-xs font-medium uppercase tracking-wide text-gray-400 lg:inline">Press ⏎</span>
+                <button
+                  type="submit"
+                  class="inline-flex h-10 items-center justify-center rounded-full bg-gradient-to-r from-todde-blue to-todde-blue-dark px-5 text-sm font-semibold text-white shadow-sm transition hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-todde-blue/40"
+                  aria-label="Search inventory"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
