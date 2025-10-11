@@ -20,6 +20,7 @@ kombu==5.5.4
 MarkupSafe==3.0.3
 packaging==25.0
 pluggy==1.6.0
+Pillow==11.0.0
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.11
 pytest==8.3.5

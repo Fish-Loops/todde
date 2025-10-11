@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 
@@ -177,7 +178,8 @@ class CarVariantImage(OrderableModel):
 		on_delete=models.CASCADE,
 		related_name="images",
 	)
-	image_url = models.URLField()
+	image = models.ImageField(upload_to="car_variants/", blank=True, null=True)
+	image_url = models.URLField(blank=True)
 	alt_text = models.CharField(max_length=160, blank=True)
 	is_active = models.BooleanField(default=True)
 
@@ -188,6 +190,20 @@ class CarVariantImage(OrderableModel):
 
 	def __str__(self) -> str:
 		return f"Image for {self.variant}"
+
+	def clean(self) -> None:
+		super().clean()
+		if not self.image and not self.image_url:
+			raise ValidationError({
+				"image": "Upload an image or provide an image URL.",
+				"image_url": "Upload an image or provide an image URL.",
+			})
+
+	@property
+	def source_url(self) -> str:
+		if self.image:
+			return self.image.url
+		return self.image_url
 
 
 class CarVariantFeature(OrderableModel):

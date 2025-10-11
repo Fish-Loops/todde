@@ -203,7 +203,7 @@
             <a href="{% url 'marketing:vehicle_detail' variant.id %}" class="block h-full w-full">
               <img
                 src="{{ variant.display_image }}"
-                alt="{{ variant.model.manufacturer.name }} {{ variant.model.name }} {{ variant.year }}"
+                alt="{{ variant.display_image_alt|default:variant.model.manufacturer.name }}"
                 loading="lazy"
                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />

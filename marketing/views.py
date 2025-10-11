@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Max, Min, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.templatetags.static import static
 from django.views.decorators.http import require_GET
 
 from .models import (
@@ -46,7 +47,16 @@ def homepage(request):
 	section_copy = _build_section_copy_map()
 	hero = HomepageHero.objects.filter(is_active=True).order_by("order").first()
 	categories = HomepageCategory.objects.filter(is_active=True).order_by("order")
-	featured = HomepageFeaturedVehicle.objects.filter(is_active=True).select_related("variant", "variant__model", "variant__model__manufacturer")
+	featured = (
+		HomepageFeaturedVehicle.objects.filter(is_active=True)
+		.select_related("variant", "variant__model", "variant__model__manufacturer")
+		.prefetch_related(
+			Prefetch(
+				"variant__images",
+				queryset=CarVariantImage.objects.filter(is_active=True).order_by("order", "id"),
+			)
+		)
+	)
 	value_props = HomepageValueProposition.objects.filter(is_active=True)
 	brand_metrics = HomepageBrandMetric.objects.filter(is_active=True)
 	financing_highlights = HomepageFinancingHighlight.objects.filter(is_active=True)
@@ -54,11 +64,31 @@ def homepage(request):
 	financing_steps = HomepageFinancingStep.objects.filter(is_active=True)
 	contact_cards = HomepageContactCard.objects.filter(is_active=True)
 
+	placeholder_image_url = static("images/vehicle-placeholder.svg")
+	featured_list = []
+	for vehicle in featured:
+		display_url = placeholder_image_url
+		display_alt = vehicle.name
+		is_placeholder = True
+		if vehicle.variant:
+			image_info = _resolve_variant_primary_image(vehicle.variant, placeholder_image_url)
+			display_url = image_info.source_url
+			display_alt = image_info.alt_text or vehicle.name
+			is_placeholder = image_info.is_placeholder
+		elif vehicle.image_url:
+			display_url = vehicle.image_url
+			display_alt = vehicle.name
+			is_placeholder = False
+		vehicle.display_image_url = display_url
+		vehicle.display_image_alt = display_alt
+		vehicle.display_image_is_placeholder = is_placeholder
+		featured_list.append(vehicle)
+
 	context = {
 		"nav_links": nav_links,
 		"hero": hero,
 		"categories": categories,
-		"featured_vehicles": featured,
+		"featured_vehicles": featured_list,
 		"value_props": value_props,
 		"brand_metrics": brand_metrics,
 		"financing_highlights": financing_highlights,
@@ -247,6 +277,32 @@ def _compute_financing_summary(
 	}
 
 
+def _resolve_variant_primary_image(variant: CarVariant, placeholder_url: str) -> SimpleNamespace:
+	manufacturer_name = variant.model.manufacturer.name if variant.model and variant.model.manufacturer else ""
+	model_name = variant.model.name if variant.model else ""
+	year_value = getattr(variant, "year", "")
+	default_alt_components = [component for component in (manufacturer_name, model_name, year_value) if component]
+	default_alt_text = " ".join(map(str, default_alt_components)) or "Todde vehicle"
+	images_manager = getattr(variant, "images", None)
+	if images_manager is not None:
+		image_candidates = images_manager.all()
+		for image in image_candidates:
+			source = getattr(image, "source_url", "") or ""
+			source = source.strip()
+			if source:
+				alt_text = getattr(image, "alt_text", "") or default_alt_text
+				return SimpleNamespace(
+					source_url=source,
+					alt_text=alt_text,
+					is_placeholder=False,
+				)
+	return SimpleNamespace(
+		source_url=placeholder_url,
+		alt_text=default_alt_text,
+		is_placeholder=True,
+	)
+
+
 def _inventory_queryset(listing_type: str | None = None):
 	queryset = (
 		CarVariant.objects.filter(
@@ -255,6 +311,12 @@ def _inventory_queryset(listing_type: str | None = None):
 			model__manufacturer__is_active=True,
 		)
 		.select_related("model", "model__manufacturer")
+		.prefetch_related(
+			Prefetch(
+				"images",
+				queryset=CarVariantImage.objects.filter(is_active=True).order_by("order", "id"),
+			)
+		)
 	)
 	if listing_type:
 		queryset = queryset.filter(listing_type=listing_type)
@@ -392,15 +454,13 @@ def _build_inventory_context(
 
 	encoded_filters = _encode_filters({k: v for k, v in selected_filters.items() if k != "sort"})
 
-	image_library = {
-		CarModel.BodyType.SEDAN: "https://images.unsplash.com/photo-1549921296-3b4a6b789555?auto=format&fit=crop&w=1200&q=80",
-		CarModel.BodyType.SUV: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-		CarModel.BodyType.COUPE: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80",
-		CarModel.BodyType.TRUCK: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
-	}
-	default_image = "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80"
+	placeholder_image_url = static("images/vehicle-placeholder.svg")
 	for variant in page_obj:
-		variant.display_image = image_library.get(variant.model.body_type, default_image)
+		image_info = _resolve_variant_primary_image(variant, placeholder_image_url)
+		variant.display_image = image_info.source_url
+		variant.display_image_url = image_info.source_url
+		variant.display_image_alt = image_info.alt_text or f"{variant.model.manufacturer.name} {variant.model.name}"
+		variant.display_image_is_placeholder = image_info.is_placeholder
 
 	copy = _resolve_inventory_copy(
 		page_slug,
@@ -504,14 +564,35 @@ def vehicle_detail(request, variant_id: int):
 	if detail and not detail.is_active:
 		detail = None
 
-	gallery = list(variant.images.all())
+	placeholder_image_url = static("images/vehicle-placeholder.svg")
+	gallery: list[SimpleNamespace] = []
+	placeholder_items: list[SimpleNamespace] = []
+	for image in variant.images.all():
+		raw_source = (image.source_url or "").strip()
+		resolved_source = raw_source or placeholder_image_url
+		entry = SimpleNamespace(
+			source_url=resolved_source,
+			alt_text=image.alt_text or f"{variant.model.manufacturer.name} {variant.model.name}",
+			is_placeholder=resolved_source == placeholder_image_url,
+		)
+		if entry.is_placeholder:
+			placeholder_items.append(entry)
+		else:
+			gallery.append(entry)
+
 	if not gallery:
 		gallery = [
 			SimpleNamespace(
-				image_url="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80",
+				source_url=placeholder_image_url,
 				alt_text=f"{variant.model.manufacturer.name} {variant.model.name}",
+				is_placeholder=True,
 			)
 		]
+	else:
+		gallery.extend(placeholder_items)
+
+	primary_gallery_image = gallery[0] if gallery else None
+	gallery_thumbnails = [item for item in gallery[1:] if not item.is_placeholder]
 	features = list(variant.features.all()) or [
 		SimpleNamespace(text="Alloy wheels"),
 		SimpleNamespace(text="Airbags"),
@@ -572,6 +653,8 @@ def vehicle_detail(request, variant_id: int):
 		"variant": variant,
 		"detail": detail,
 		"gallery": gallery,
+		"primary_gallery_image": primary_gallery_image,
+		"gallery_thumbnails": gallery_thumbnails,
 		"features": features,
 		"specifications": specifications,
 		"loan_summary": loan_summary,

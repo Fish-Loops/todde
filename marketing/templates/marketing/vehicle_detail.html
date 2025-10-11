@@ -80,21 +80,21 @@
     <div class="order-1 flex flex-col gap-10 lg:order-2">
       <div class="space-y-6">
         <div class="relative vehicle-gallery-frame shadow-card">
-          {% with primary_image=gallery|first %}
+          {% if primary_gallery_image %}
           <figure>
-            <img src="{{ primary_image.image_url }}" alt="{{ primary_image.alt_text|default:variant }}" class="h-[420px] w-full object-cover md:h-[460px]" />
+            <img src="{{ primary_gallery_image.source_url }}" alt="{{ primary_gallery_image.alt_text|default:variant }}" class="h-[420px] w-full object-cover md:h-[460px]" />
           </figure>
-          {% endwith %}
+          {% endif %}
           <div class="absolute right-6 top-6 hidden gap-3 md:flex" aria-hidden="true">
             <span class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle">‹</span>
             <span class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle">›</span>
           </div>
         </div>
-        {% if gallery|length > 1 %}
+        {% if gallery_thumbnails %}
         <div class="grid grid-cols-3 gap-3 md:grid-cols-5">
-          {% for image in gallery|slice:"1:" %}
-          <a href="{{ image.image_url }}" class="vehicle-gallery-thumb group">
-            <img src="{{ image.image_url }}" alt="{{ image.alt_text|default:variant }}" class="h-24 w-full object-cover transition duration-300 group-hover:scale-105" />
+          {% for image in gallery_thumbnails %}
+          <a href="{{ image.source_url }}" class="vehicle-gallery-thumb group">
+            <img src="{{ image.source_url }}" alt="{{ image.alt_text|default:variant }}" class="h-24 w-full object-cover transition duration-300 group-hover:scale-105" />
           </a>
           {% endfor %}
         </div>

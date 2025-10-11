@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import (
 	CarManufacturer,
@@ -41,8 +42,19 @@ class CarModelInline(admin.TabularInline):
 
 class CarVariantImageInline(admin.TabularInline):
 	model = CarVariantImage
-	fields = ("image_url", "alt_text", "order", "is_active")
+	fields = ("image_preview", "image", "image_url", "alt_text", "order", "is_active")
+	readonly_fields = ("image_preview",)
 	extra = 1
+
+	@admin.display(description="Preview")
+	def image_preview(self, obj: CarVariantImage) -> str:
+		if obj.pk and obj.source_url:
+			return format_html(
+				"<img src='{}' style='max-height: 80px;' alt='{}' />",
+				obj.source_url,
+				obj.alt_text or obj.variant,
+			)
+		return "–"
 
 
 class CarVariantFeatureInline(admin.TabularInline):

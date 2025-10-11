@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+from django.templatetags.static import static
 
 from .models import (
 	CarManufacturer,
@@ -41,13 +42,15 @@ class MarketingPagesTests(TestCase):
 			transmission=CarVariant.Transmission.AUTOMATIC,
 			listing_type=CarVariant.ListingType.FOREIGN_USED,
 		)
-		CarVariant.objects.create(
+		secondary_variant = CarVariant.objects.create(
 			model=model,
 			year=2022,
 			price="21000000",
 			transmission=CarVariant.Transmission.MANUAL,
 			listing_type=CarVariant.ListingType.REGISTERED,
 		)
+		cls.primary_variant = variant
+		cls.secondary_variant = secondary_variant
 
 		CarVariantDetail.objects.create(
 			variant=variant,
@@ -221,7 +224,7 @@ class MarketingPagesTests(TestCase):
 		self.assertGreater(response.context["nav_links"].count(), 0)
 		self.assertIsNotNone(response.context.get("hero"))
 		self.assertEqual(response.context["categories"].count(), 2)
-		self.assertGreater(response.context["featured_vehicles"].count(), 0)
+		self.assertGreater(len(response.context["featured_vehicles"]), 0)
 		self.assertIn("section_copy", response.context)
 		self.assertGreater(response.context["car_manufacturers"].count(), 0)
 
@@ -285,6 +288,65 @@ class MarketingPagesTests(TestCase):
 		self.assertIn("applicant_types", response.context)
 		self.assertGreaterEqual(len(response.context["applicant_types"]), 1)
 
+	def test_vehicle_detail_uses_placeholder_when_images_missing(self):
+		manufacturer = CarManufacturer.objects.first()
+		placeholder_model = CarModel.objects.create(manufacturer=manufacturer, name="Placeholder Model")
+		variant = CarVariant.objects.create(
+			model=placeholder_model,
+			year=2025,
+			price="19000000",
+			transmission=CarVariant.Transmission.AUTOMATIC,
+			listing_type=CarVariant.ListingType.REGISTERED,
+		)
+		response = self.client.get(reverse("marketing:vehicle_detail", args=[variant.id]))
+		self.assertEqual(response.status_code, 200)
+		gallery = response.context["gallery"]
+		self.assertEqual(len(gallery), 1)
+		placeholder_url = static("images/vehicle-placeholder.svg")
+		self.assertEqual(gallery[0].source_url, placeholder_url)
+		self.assertTrue(gallery[0].is_placeholder)
+
+	def test_homepage_featured_vehicle_uses_variant_image(self):
+		response = self.client.get(reverse("marketing:home"))
+		featured = response.context["featured_vehicles"]
+		vehicle = next(item for item in featured if item.variant_id == self.primary_variant.id)
+		self.assertEqual(vehicle.display_image_url, "https://example.com/image-primary.jpg")
+		self.assertFalse(vehicle.display_image_is_placeholder)
+
+	def test_homepage_featured_vehicle_placeholder_when_missing_variant_image(self):
+		manufacturer = CarManufacturer.objects.first()
+		model = CarModel.objects.create(manufacturer=manufacturer, name="Placeholder Featured Model")
+		variant = CarVariant.objects.create(
+			model=model,
+			year=2026,
+			price="17000000",
+			transmission=CarVariant.Transmission.AUTOMATIC,
+			listing_type=CarVariant.ListingType.REGISTERED,
+		)
+		HomepageFeaturedVehicle.objects.create(
+			name="Placeholder Feature",
+			variant=variant,
+			order=99,
+			is_active=True,
+		)
+		response = self.client.get(reverse("marketing:home"))
+		featured = response.context["featured_vehicles"]
+		target = next(item for item in featured if item.variant_id == variant.id)
+		placeholder_url = static("images/vehicle-placeholder.svg")
+		self.assertEqual(target.display_image_url, placeholder_url)
+		self.assertTrue(target.display_image_is_placeholder)
+
+	def test_inventory_pages_use_variant_images_with_placeholder(self):
+		response = self.client.get(reverse("marketing:all_cars"))
+		page_variants = {variant.id: variant for variant in response.context["page_obj"].object_list}
+		primary_variant = page_variants[self.primary_variant.id]
+		self.assertEqual(primary_variant.display_image_url, "https://example.com/image-primary.jpg")
+		self.assertFalse(primary_variant.display_image_is_placeholder)
+		secondary_variant = page_variants[self.secondary_variant.id]
+		placeholder_url = static("images/vehicle-placeholder.svg")
+		self.assertEqual(secondary_variant.display_image_url, placeholder_url)
+		self.assertTrue(secondary_variant.display_image_is_placeholder)
+
 	def test_all_cars_filters_by_transmission(self):
 		url = reverse("marketing:all_cars")
 		response = self.client.get(url, {"transmission": CarVariant.Transmission.MANUAL})
@@ -347,6 +409,9 @@ class MarketingPagesTests(TestCase):
 		self.assertEqual(FinancingSnapshotItem.objects.count(), FinancingSnapshotItem.objects.values("text").distinct().count())
 		self.assertEqual(FinancingBenefit.objects.count(), FinancingBenefit.objects.values("title").distinct().count())
 		self.assertEqual(CarVariantDetail.objects.count(), CarVariantDetail.objects.values("variant").distinct().count())
-		self.assertEqual(CarVariantImage.objects.count(), CarVariantImage.objects.values("variant", "image_url").distinct().count())
+		self.assertEqual(
+			CarVariantImage.objects.count(),
+			CarVariantImage.objects.values("variant", "image_url", "image").distinct().count(),
+		)
 		self.assertEqual(CarVariantFeature.objects.count(), CarVariantFeature.objects.values("variant", "text").distinct().count())
 		self.assertEqual(CarVariantSpecification.objects.count(), CarVariantSpecification.objects.values("variant", "label").distinct().count())

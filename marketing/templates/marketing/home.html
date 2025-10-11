@@ -130,103 +130,6 @@
           </div>
         </div>
 
-        <form action="/#inventory" class="todde-card grid gap-4 bg-white p-6 text-sm text-todde-dark shadow-subtle md:grid-cols-5">
-          <div class="md:col-span-1">
-            <label for="filter-model" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Select Model</label>
-            <button
-              id="dropdownModelButton"
-              data-dropdown-toggle="dropdownModel"
-              class="mt-2 flex w-full items-center justify-between border border-todde-blue/10 bg-white px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
-              type="button"
-            >
-              <span class="text-todde-dark/70">Any model</span>
-              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-              </svg>
-            </button>
-            <div id="dropdownModel" class="z-10 hidden bg-white divide-y divide-gray-100 shadow w-44">
-              <ul class="py-2 text-sm text-gray-700">
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Any model</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Compact</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">SUV</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Luxury</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="md:col-span-1">
-            <label for="filter-body" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Select Body</label>
-            <button
-              id="dropdownBodyButton"
-              data-dropdown-toggle="dropdownBody"
-              class="mt-2 flex w-full items-center justify-between border border-todde-blue/10 bg-white px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
-              type="button"
-            >
-              <span class="text-todde-dark/70">Any body</span>
-              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-              </svg>
-            </button>
-            <div id="dropdownBody" class="z-10 hidden bg-white divide-y divide-gray-100 shadow w-44">
-              <ul class="py-2 text-sm text-gray-700">
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Any body</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Hatchback</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Saloon</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Pickup</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="md:col-span-1">
-            <label for="filter-year" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Select Year</label>
-            <button
-              id="dropdownYearButton"
-              data-dropdown-toggle="dropdownYear"
-              class="mt-2 flex w-full items-center justify-between border border-todde-blue/10 bg-white px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
-              type="button"
-            >
-              <span class="text-todde-dark/70">Any year</span>
-              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-              </svg>
-            </button>
-            <div id="dropdownYear" class="z-10 hidden bg-white divide-y divide-gray-100 shadow w-44">
-              <ul class="py-2 text-sm text-gray-700">
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Any year</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">2024</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">2023</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">2022</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="md:col-span-1">
-            <label for="filter-engine" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Select Engine</label>
-            <button
-              id="dropdownEngineButton"
-              data-dropdown-toggle="dropdownEngine"
-              class="mt-2 flex w-full items-center justify-between border border-todde-blue/10 bg-white px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
-              type="button"
-            >
-              <span class="text-todde-dark/70">Any engine</span>
-              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-              </svg>
-            </button>
-            <div id="dropdownEngine" class="z-10 hidden bg-white divide-y divide-gray-100 shadow w-44">
-              <ul class="py-2 text-sm text-gray-700">
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Any engine</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Hybrid</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Petrol</a></li>
-                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Diesel</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="flex items-end md:col-span-1">
-            <button type="submit" class="w-full justify-center bg-[#1A1A1A] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#2A2A2A]">Search Parts</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
@@ -273,7 +176,7 @@
     {% for vehicle in featured_vehicles %}
       <article class="todde-card overflow-hidden ">
         <div class="relative">
-          <img src="{{ vehicle.image_url }}" alt="{{ vehicle.name }}" class="h-56 w-full object-cover" />
+          <img src="{{ vehicle.display_image_url }}" alt="{{ vehicle.display_image_alt|default:vehicle.name }}" class="h-56 w-full object-cover" />
           <span class="absolute left-4 top-4  bg-todde-blue px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">{{ vehicle.badge }}</span>
         </div>
         <div class="space-y-4 p-6">
