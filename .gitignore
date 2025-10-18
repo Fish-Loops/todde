@@ -1,0 +1,58 @@
+
+# --- Python / Django -------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg-info/
+*.log
+*.sqlite3
+!db.sqlite3
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+/coverage/
+htmlcov/
+build/
+/media/
+!/media/.gitkeep
+
+# --- Environment & secrets -------------------------------------------
+.env
+.env.*
+.venv/
+venv/
+.python-version
+
+# --- Node / Frontend -------------------------------------------------
+node_modules/
+*.tsbuildinfo
+*.tgz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/.parcel-cache/
+/.turbo/
+/.vite/
+/.next/
+/.nuxt/
+dist/
+out/
+
+# --- Editor & tooling -------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.orig
+*.bak
+
+# --- Misc -------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini

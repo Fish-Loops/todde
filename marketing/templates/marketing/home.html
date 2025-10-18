@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static marketing_icons %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+{% block meta_description %}{{ meta.description }}{% endblock %}
+
+{% block content %}
+<div class="bg-todde-neutral/70">
+  <div class="container py-10">
+    <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <aside class="todde-card w-full overflow-hidden bg-white p-0 text-todde-dark shadow-card">
+        <div class="bg-[#FF7A00] px-6 py-4 text-white">
+          <div class="flex items-center gap-3">
+            {% marketing_icon 'heroicons:bars-3' 'h-5 w-5 text-white' %}
+            <p class="text-sm font-semibold uppercase tracking-widest">Product Category</p>
+          </div>
+        </div>
+        <div class="px-6 pb-6 pt-5">
+          <form
+            id="car-filter-form"
+            class="space-y-4"
+            data-models-url="{% url 'marketing:api_car_models' %}"
+            data-variants-url="{% url 'marketing:api_car_variants' %}"
+          >
+            <div>
+              <label for="car-manufacturer" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Manufacturer</label>
+              <select
+                id="car-manufacturer"
+                name="manufacturer"
+                class="mt-2 block w-full border border-todde-blue/10 bg-white px-4 py-3 text-sm text-todde-dark/80 focus:border-todde-blue focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
+                data-role="car-manufacturer"
+              >
+                <option value="">Select manufacturer</option>
+                {% for manufacturer in car_manufacturers %}
+                  <option value="{{ manufacturer.id }}">{{ manufacturer.name }}</option>
+                {% empty %}
+                  <option value="" disabled>No manufacturers available yet</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div>
+              <label for="car-model" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Model</label>
+              <select
+                id="car-model"
+                name="model"
+                class="mt-2 block w-full border border-todde-blue/10 bg-white px-4 py-3 text-sm text-todde-dark/80 focus:border-todde-blue focus:outline-none focus:ring-2 focus:ring-todde-blue/30 disabled:bg-todde-neutral/40 disabled:text-todde-dark/40"
+                data-role="car-model"
+                disabled
+              >
+                <option value="">Select a manufacturer first</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="car-year" class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Year</label>
+              <select
+                id="car-year"
+                name="year"
+                class="mt-2 block w-full border border-todde-blue/10 bg-white px-4 py-3 text-sm text-todde-dark/80 focus:border-todde-blue focus:outline-none focus:ring-2 focus:ring-todde-blue/30 disabled:bg-todde-neutral/40 disabled:text-todde-dark/40"
+                data-role="car-year"
+                disabled
+              >
+                <option value="">Select a model first</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-widest text-todde-dark/60">Estimated price</label>
+              <div class="mt-2 flex h-12 items-center justify-between rounded border border-todde-blue/10 bg-todde-neutral/20 px-4" data-role="car-price-wrapper">
+                <span class="text-sm font-semibold text-todde-dark" data-role="car-price">Choose a year to view price</span>
+                <span class="text-xs uppercase tracking-widest text-todde-dark/40" data-role="car-trim"></span>
+              </div>
+            </div>
+
+            <p class="hidden text-xs font-medium text-red-600" data-role="car-feedback"></p>
+
+            <div class="pt-2">
+              <a href="/#inventory" class="inline-flex w-full items-center justify-center gap-2 bg-todde-blue px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white transition hover:bg-todde-blue/90">
+                Browse inventory
+                {% marketing_icon 'heroicons:arrow-right' 'h-4 w-4 text-white' %}
+              </a>
+            </div>
+          </form>
+        </div>
+      </aside>
+
+      <div class="space-y-6">
+        <div class="relative isolate overflow-hidden  bg-gradient-to-r from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] text-white shadow-card">
+          {% if hero and hero.image_url %}
+            <img
+              src="{{ hero.image_url }}"
+              alt="{{ hero.title|default:'Featured vehicle' }}"
+              class="absolute inset-y-0 right-0 h-full w-3/5 object-cover opacity-90 mix-blend-lighten"
+            />
+          {% endif %}
+          <div class="relative z-10 max-w-xl px-10 py-14">
+            {% if hero and hero.badge_label %}
+              <span class="inline-flex items-center gap-2  bg-todde-blue px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                {{ hero.badge_label }}
+              </span>
+            {% endif %}
+            <h1 class="mt-6 text-4xl font-bold leading-tight lg:text-5xl">
+              {{ hero.title|default:"Auto Financing That Gets You On The Road Faster" }}
+            </h1>
+            <p class="mt-4 text-base text-white/80">
+              {{ hero.subtitle|default:"Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront." }}
+            </p>
+            <div class="mt-8">
+              {% if hero and hero.primary_cta_label and hero.primary_cta_url %}
+                <a href="{{ hero.primary_cta_url }}" class="inline-flex items-center justify-center  bg-todde-blue px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-todde-blue-dark">
+                  {{ hero.primary_cta_label }}
+                </a>
+              {% endif %}
+            </div>
+            {% if brand_metrics %}
+              <dl class="mt-10 grid gap-6 sm:grid-cols-3">
+                {% for metric in brand_metrics %}
+                  <div>
+                    <dt class="text-sm uppercase tracking-widest text-white/60">{{ metric.label }}</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-white">{{ metric.value }}</dd>
+                  </div>
+                {% endfor %}
+              </dl>
+            {% endif %}
+          </div>
+          <div class="absolute bottom-8 right-10 flex items-center gap-2">
+            <span class="h-2 w-2  bg-white"></span>
+            <span class="h-2 w-2  bg-white/40"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="inventory" class="container py-16">
+  {% with copy=section_copy.categories %}
+    <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="todde-section-title">{{ copy.heading|default:"Browse by category" }}</h2>
+        <p class="todde-subtitle">{{ copy.subheading|default:"Find the perfect car for work, family, or adventure." }}</p>
+      </div>
+      {% if copy.cta_label and copy.cta_url %}
+        <a href="{{ copy.cta_url }}" class="todde-button-secondary">{{ copy.cta_label }}</a>
+      {% endif %}
+    </div>
+  {% endwith %}
+  <div class="mt-10 grid gap-4 justify-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {% for category in categories %}
+      <article class="todde-card group mx-auto flex w-full max-w-[280px] flex-col items-center gap-4  bg-white px-6 py-8 text-center transition duration-150 hover:-translate-y-1">
+  <span class="inline-flex h-16 w-16 items-center justify-center  border-4 border-transparent bg-todde-blue/10 text-todde-blue shadow-subtle transition group-hover:border-todde-blue">
+          {% marketing_icon category.icon 'w-8 h-8' %}
+        </span>
+        <h3 class="text-base font-semibold text-todde-blue">{{ category.name }}</h3>
+        <p class="text-sm text-todde-dark/70">{{ category.description }}</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="container py-16" aria-labelledby="featured-cars">
+  {% with copy=section_copy.featured %}
+    <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 id="featured-cars" class="todde-section-title">{{ copy.heading|default:"Featured vehicles" }}</h2>
+        <p class="todde-subtitle">{{ copy.subheading|default:"Handpicked cars, verified by Todde engineers." }}</p>
+      </div>
+      {% if copy.cta_label and copy.cta_url %}
+        <a href="{{ copy.cta_url }}" class="todde-button-primary">{{ copy.cta_label }}</a>
+      {% endif %}
+    </div>
+  {% endwith %}
+  <div class="mt-10 grid gap-8 lg:grid-cols-4 md:grid-cols-2">
+    {% for vehicle in featured_vehicles %}
+      <article class="todde-card overflow-hidden ">
+        <div class="relative">
+          <img src="{{ vehicle.display_image_url }}" alt="{{ vehicle.display_image_alt|default:vehicle.name }}" class="h-56 w-full object-cover" />
+          <span class="absolute left-4 top-4  bg-todde-blue px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">{{ vehicle.badge }}</span>
+        </div>
+        <div class="space-y-4 p-6">
+          <div class="space-y-1">
+            <h3 class="text-xl font-semibold text-todde-blue">{{ vehicle.name }}</h3>
+            <p class="text-sm text-todde-dark/60">{{ vehicle.location }}</p>
+          </div>
+          <div class="space-y-1">
+            {% if vehicle.resolved_price %}
+              <p class="text-lg font-bold text-todde-dark">{{ vehicle.resolved_price }}</p>
+            {% endif %}
+            {% if vehicle.resolved_payment_plan %}
+              <p class="text-sm text-todde-dark/70">{{ vehicle.resolved_payment_plan }}</p>
+            {% endif %}
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="inline-flex items-center gap-2 font-semibold text-todde-blue">
+              {% marketing_icon 'heroicons:check' 'w-5 h-5 text-todde-blue' %}
+              Todde Certified
+            </span>
+            <a href="/financing/" class="text-sm font-semibold text-todde-blue hover:text-todde-blue-dark">View plan &rarr;</a>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="about" class="bg-todde-neutral py-20">
+  <div class="container grid gap-12 lg:grid-cols-2 lg:items-center">
+    <div class="space-y-6">
+      {% with copy=section_copy.value_props %}
+        <h2 id="values" class="todde-section-title">{{ copy.heading|default:"Why choose Todde?" }}</h2>
+        <p class="todde-subtitle">{{ copy.subheading|default:"A full-stack automotive partner that delivers value before and after you take the keys." }}</p>
+      {% endwith %}
+      <div class="space-y-6">
+        {% for prop in value_props %}
+          <article class="flex gap-4  bg-white/80 p-6 shadow-subtle">
+            <div class="flex h-12 w-12 items-center justify-center  bg-todde-blue/10 text-todde-blue">
+              {% marketing_icon prop.icon 'w-6 h-6' %}
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-todde-blue">{{ prop.title }}</h3>
+              <p class="text-sm text-todde-dark/80">{{ prop.description }}</p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="relative">
+      <div class=" bg-gradient-to-br from-white to-todde-blue/10 p-8 shadow-card">
+        <img
+          src="https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=900&q=80"
+          alt="Driver satisfied with Todde service"
+          class="h-full w-full  object-cover"
+        />
+      </div>
+      <div class="absolute -bottom-8 right-6 w-56  bg-white p-4 text-sm text-todde-blue shadow-card">
+        <p class="font-semibold">Financing made simple</p>
+        <p class="text-xs text-todde-dark/70">Todde advisors stay with you from application to onboarding.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="relative overflow-hidden py-16">
+  <div class="container relative z-10  bg-gradient-to-r from-todde-blue via-todde-blue-dark to-todde-jet px-8 py-14 text-white shadow-card">
+    <div class="grid gap-10 lg:grid-cols-[1.1fr_auto] lg:items-center">
+      <div class="space-y-6">
+        {% with copy=section_copy.financing_cta %}
+          <h2 class="text-3xl font-bold md:text-4xl">{{ copy.heading|default:"Unlock Todde Financing" }}</h2>
+          <p class="text-lg text-white/80">{{ copy.subheading|default:"Spread payments up to 36 months, enjoy bundled insurance, and stay road-ready with maintenance support." }}</p>
+        {% endwith %}
+        <ul class="grid gap-4 sm:grid-cols-3">
+          {% for highlight in financing_highlights %}
+            <li class=" bg-white/10 p-4 backdrop-blur">
+              <p class="text-lg font-semibold">{{ highlight.title }}</p>
+              <p class="text-sm text-white/80">{{ highlight.description }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="space-y-4 text-center">
+        {% with copy=section_copy.financing_cta %}
+          {% if copy.cta_label and copy.cta_url %}
+            <a href="{{ copy.cta_url }}" class="todde-button-primary bg-white text-todde-blue hover:bg-white/80">{{ copy.cta_label }}</a>
+          {% endif %}
+          <p class="text-sm text-white/70">{{ copy.supporting_text|default:"Decisions within 48 hours • Powered by Todde partner banks" }}</p>
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="bg-white py-20">
+  <div class="container grid gap-12 lg:grid-cols-2 lg:items-center">
+    <div class="space-y-6">
+      {% with copy=section_copy.contact %}
+        <h2 class="todde-section-title">{{ copy.heading|default:"Ready to get started?" }}</h2>
+        <p class="todde-subtitle">{{ copy.subheading|default:"Schedule a consultation with a Todde advisor to explore inventory, financing, and partner perks." }}</p>
+      {% endwith %}
+      {% if contact_cards %}
+        <div class="grid gap-6 sm:grid-cols-2">
+          {% for card in contact_cards %}
+            <div class=" border border-todde-blue/10 p-6 shadow-subtle">
+              <p class="text-sm font-semibold uppercase tracking-widest text-todde-blue/80">{{ card.title }}</p>
+              <p class="mt-2 text-base text-todde-dark/80">
+                {{ card.description|linebreaksbr }}
+                {% if card.link_label and card.link_url %}
+                  <a href="{{ card.link_url }}" class="text-todde-blue underline">{{ card.link_label }}</a>
+                {% endif %}
+              </p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <form class="todde-card space-y-5 bg-white p-8" aria-labelledby="contact-heading">
+      <h3 id="contact-heading" class="text-2xl font-semibold text-todde-blue">Book a Todde consultation</h3>
+      <div>
+        <label for="full_name" class="block text-sm font-medium text-todde-dark/80">Full Name</label>
+  <input id="full_name" type="text" name="full_name" class="mt-1 block w-full  border border-todde-blue/10 bg-white px-4 py-3 focus:border-todde-blue focus:ring-todde-blue/30" placeholder="Adaeze Okafor" />
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="email" class="block text-sm font-medium text-todde-dark/80">Email Address</label>
+          <input id="email" type="email" name="email" class="mt-1 block w-full  border border-todde-blue/10 bg-white px-4 py-3 focus:border-todde-blue focus:ring-todde-blue/30" placeholder="you@todde.africa" />
+        </div>
+        <div>
+          <label for="phone" class="block text-sm font-medium text-todde-dark/80">Phone Number</label>
+          <input id="phone" type="tel" name="phone" class="mt-1 block w-full  border border-todde-blue/10 bg-white px-4 py-3 focus:border-todde-blue focus:ring-todde-blue/30" placeholder="0801 234 5678" />
+        </div>
+      </div>
+      <div>
+        <label for="interest" class="block text-sm font-medium text-todde-dark/80">Interest</label>
+        <select id="interest" name="interest" class="mt-1 block w-full  border border-todde-blue/10 bg-white px-4 py-3 focus:border-todde-blue focus:ring-todde-blue/30">
+          <option>Interested in buying a car</option>
+          <option>Interested in financing</option>
+          <option>Partnering with Todde</option>
+        </select>
+      </div>
+      <div>
+        <label for="message" class="block text-sm font-medium text-todde-dark/80">Message</label>
+        <textarea id="message" name="message" rows="3" class="mt-1 block w-full  border border-todde-blue/10 bg-white px-4 py-3 focus:border-todde-blue focus:ring-todde-blue/30" placeholder="Tell us what you need"></textarea>
+      </div>
+      <button type="submit" class="todde-button-primary w-full">Request Callback</button>
+      <p class="text-xs text-todde-dark/60">By submitting, you agree to our privacy policy and consent to be contacted by the Todde team.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/car-inventory.js' %}" defer></script>
+{% endblock %}

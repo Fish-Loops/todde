@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<section class="border-b border-todde-jet/10 bg-white/95 py-8">
+  <div class="container flex flex-wrap items-center justify-between gap-6">
+    <div>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-todde-dark/50">{{ page_kicker|default:"Inventory" }}</p>
+      <h1 class="mt-2 text-2xl font-semibold text-todde-dark sm:text-3xl">{{ page_title|default:"All Cars" }}</h1>
+      <p class="mt-2 max-w-2xl text-sm text-todde-dark/60">
+        {{ intro_text|default:"Discover certified cars inspected by Todde. Use the filters to zero in on the right price, year, transmission, or body style." }}
+      </p>
+    </div>
+    <div class="flex items-center gap-3 rounded-full border border-todde-jet/10 bg-white px-5 py-2 text-sm font-medium text-todde-dark/70">
+      <span class="text-todde-blue">{{ total_results|intcomma }}</span>
+      <span>{{ summary_badge_label|default:"vehicles available" }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="py-10">
+  <div class="container grid gap-8 md:grid-cols-[300px,_1fr] md:items-start xl:grid-cols-[320px,_1fr]">
+    <aside class="md:sticky md:top-28 md:self-start">
+      <div class="rounded-2xl border border-todde-jet/10 bg-white/95 p-6 shadow-sm">
+        <div class="space-y-2 border-b border-todde-jet/10 pb-5">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-todde-dark/50">Inventory</p>
+          <h2 class="text-xl font-semibold text-todde-dark">Filter Results</h2>
+          <p class="text-xs text-todde-dark/60">Fine-tune your search with price, year, transmission, or body style filters.</p>
+        </div>
+        <form method="get" class="mt-6 space-y-7">
+          <input type="hidden" name="sort" value="{{ selected_sort }}" />
+
+          <div class="space-y-4 border-b border-todde-jet/10 pb-6">
+            <div class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-todde-dark/60">Price Range (₦)</p>
+              {% if available_stats.min_price and available_stats.max_price %}
+              <p class="text-base font-semibold tracking-wide text-todde-dark">{{ available_stats.min_price|intcomma }} <span class="text-todde-dark/40">–</span> {{ available_stats.max_price|intcomma }}</p>
+              {% endif %}
+            </div>
+            <div class="flex flex-col gap-4">
+              <div class="space-y-2">
+                <label for="price_min" class="text-xs font-medium text-todde-dark/70">Min</label>
+                <input
+                  type="number"
+                  name="price_min"
+                  id="price_min"
+                  min="0"
+                  step="100000"
+                  value="{{ selected_filters.price_min|default_if_none:'' }}"
+                  class="w-full rounded-lg border border-todde-jet/20 bg-white px-3 py-2 text-sm text-todde-dark focus:border-todde-blue focus:outline-none focus:ring-1 focus:ring-todde-blue/40"
+                />
+              </div>
+              <div class="space-y-2">
+                <label for="price_max" class="text-xs font-medium text-todde-dark/70">Max</label>
+                <input
+                  type="number"
+                  name="price_max"
+                  id="price_max"
+                  min="0"
+                  step="100000"
+                  value="{{ selected_filters.price_max|default_if_none:'' }}"
+                  class="w-full rounded-lg border border-todde-jet/20 bg-white px-3 py-2 text-sm text-todde-dark focus:border-todde-blue focus:outline-none focus:ring-1 focus:ring-todde-blue/40"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3 border-b border-todde-jet/10 pb-6">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/60">Transmission</p>
+            <div class="space-y-2">
+              {% for transmission in available_transmissions %}
+              <label class="flex items-center justify-between rounded-lg border border-todde-jet/10 bg-white px-3 py-2 text-sm text-todde-dark/80 transition hover:border-todde-blue/40">
+                <span class="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="transmission"
+                    value="{{ transmission.value }}"
+                    {% if transmission.value in selected_transmissions %}checked{% endif %}
+                    class="h-4 w-4 rounded border-todde-jet/20 text-todde-blue focus:ring-todde-blue"
+                  />
+                  {{ transmission.label }}
+                </span>
+                <span class="text-xs text-todde-dark/50">({{ transmission.count }})</span>
+              </label>
+              {% empty %}
+              <p class="text-xs text-todde-dark/50">No transmission data available yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="space-y-3 border-b border-todde-jet/10 pb-6">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/60">Year</p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label for="year_min" class="text-xs font-medium text-todde-dark/70">From</label>
+                <input
+                  type="number"
+                  name="year_min"
+                  id="year_min"
+                  min="{{ available_stats.min_year|default:0 }}"
+                  max="{{ available_stats.max_year|default:'' }}"
+                  value="{{ selected_filters.year_min|default_if_none:'' }}"
+                  class="w-full rounded-lg border border-todde-jet/20 bg-white px-3 py-2 text-sm text-todde-dark focus:border-todde-blue focus:outline-none focus:ring-1 focus:ring-todde-blue/40"
+                />
+              </div>
+              <div class="space-y-2">
+                <label for="year_max" class="text-xs font-medium text-todde-dark/70">To</label>
+                <input
+                  type="number"
+                  name="year_max"
+                  id="year_max"
+                  min="{{ available_stats.min_year|default:0 }}"
+                  max="{{ available_stats.max_year|default:'' }}"
+                  value="{{ selected_filters.year_max|default_if_none:'' }}"
+                  class="w-full rounded-lg border border-todde-jet/20 bg-white px-3 py-2 text-sm text-todde-dark focus:border-todde-blue focus:outline-none focus:ring-1 focus:ring-todde-blue/40"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/60">Categories</p>
+            <div class="space-y-2">
+              {% for category in available_categories %}
+              <label class="flex items-center justify-between rounded-lg border border-todde-jet/10 bg-white px-3 py-2 text-sm text-todde-dark/80 transition hover:border-todde-blue/40">
+                <span class="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="{{ category.value }}"
+                    {% if category.value == selected_category %}checked{% endif %}
+                    class="h-4 w-4 border-todde-jet/20 text-todde-blue focus:ring-todde-blue"
+                  />
+                  {{ category.label }}
+                </span>
+                <span class="text-xs text-todde-dark/50">({{ category.count }})</span>
+              </label>
+              {% empty %}
+              <p class="text-xs text-todde-dark/50">No categories available.</p>
+              {% endfor %}
+            </div>
+            {% if selected_category %}
+            <button
+              type="submit"
+              name="category"
+              value=""
+              class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-blue-light hover:text-todde-blue"
+            >Clear category</button>
+            {% endif %}
+          </div>
+
+          <div class="space-y-3 border-t border-todde-jet/10 pt-6">
+            <button
+              type="submit"
+              class="inline-flex w-full items-center justify-center rounded-lg bg-todde-blue px-4 py-3 text-sm font-semibold text-white transition hover:bg-todde-blue-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-todde-blue/50"
+            >Apply Filters</button>
+            {% if filters_querystring %}
+            <a href="?sort={{ selected_sort }}" class="block text-center text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/50 hover:text-todde-blue">Clear filters</a>
+            {% endif %}
+            {% if filters_querystring %}
+            <a href="?" class="block text-center text-xs font-medium text-todde-blue-light hover:text-todde-blue">Reset all</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <div class="space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/40 bg-white px-6 py-4 shadow-lg shadow-todde-jet/5">
+        <div class="text-sm text-todde-dark/70">
+          Showing <span class="font-semibold text-todde-dark">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> of {{ total_results|intcomma }} cars
+        </div>
+        <form method="get" class="flex items-center gap-3 text-sm text-todde-dark/70">
+          {% for key, value in selected_filters.items %}
+            {% if key != 'sort' and key != 'page' %}
+              {% if key == 'transmission' %}
+                {% for transmission_value in value %}
+                  <input type="hidden" name="transmission" value="{{ transmission_value }}" />
+                {% endfor %}
+              {% elif value %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}" />
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          <label for="sort" class="text-xs font-semibold uppercase tracking-[0.2em] text-todde-dark/50">Sort by</label>
+          <select
+            id="sort"
+            name="sort"
+            class="rounded-xl border border-todde-jet/10 bg-white px-3 py-2 text-sm font-medium text-todde-dark focus:border-todde-blue focus:outline-none focus:ring-2 focus:ring-todde-blue/30"
+            onchange="this.form.submit()"
+          >
+            {% for option in sort_options %}
+            <option value="{{ option.value }}" {% if option.value == selected_sort %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {% for variant in page_obj %}
+        <article class="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/40 bg-white shadow-lg shadow-todde-jet/5 transition hover:-translate-y-1 hover:shadow-xl">
+          <div class="relative h-48 w-full overflow-hidden">
+            <a href="{% url 'marketing:vehicle_detail' variant.id %}" class="block h-full w-full">
+              <img
+                src="{{ variant.display_image }}"
+                alt="{{ variant.display_image_alt|default:variant.model.manufacturer.name }}"
+                loading="lazy"
+                class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            </a>
+            <div class="absolute inset-0 bg-gradient-to-t from-todde-jet/60 via-transparent to-transparent"></div>
+            <div class="absolute inset-x-4 top-4 flex items-center justify-between">
+              <span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-todde-blue">{{ variant.model.manufacturer.name }}</span>
+              <span class="rounded-full bg-todde-blue px-3 py-1 text-xs font-semibold text-white">{{ variant.year }}</span>
+            </div>
+            <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white"></div>
+          </div>
+          <div class="flex flex-1 flex-col gap-4 p-6">
+            <div>
+              <h3 class="text-lg font-semibold text-todde-dark">
+                <a href="{% url 'marketing:vehicle_detail' variant.id %}" class="transition hover:text-todde-blue">
+                  {{ variant.model.manufacturer.name }} {{ variant.model.name }} {{ variant.trim|default:'' }}
+                </a>
+              </h3>
+              <p class="text-sm text-todde-dark/60">{{ variant.model.get_body_type_display }} • {{ variant.get_transmission_display }} transmission</p>
+            </div>
+            <div class="mt-auto space-y-3">
+              <div class="flex items-baseline justify-between">
+                <span class="text-2xl font-semibold text-todde-blue">{{ variant.formatted_price }}</span>
+                <span class="text-xs uppercase tracking-widest text-todde-dark/40">Ref: #{{ variant.id }}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-todde-dark/60">
+                <span>Updated {{ variant.updated_at|date:"M j, Y" }}</span>
+                <span>Available now</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <a href="{% url 'marketing:vehicle_detail' variant.id %}" class="flex-1 rounded-2xl border border-todde-blue/40 px-4 py-2 text-center text-sm font-semibold text-todde-blue transition hover:bg-todde-blue hover:text-white">View Details</a>
+                <a href="/financing/" class="rounded-2xl bg-todde-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-todde-blue-dark">Car Finance</a>
+              </div>
+            </div>
+          </div>
+        </article>
+        {% empty %}
+        <div class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-dashed border-todde-blue/30 bg-white p-12 text-center">
+          <p class="text-lg font-semibold text-todde-dark">No cars matched your filters.</p>
+          <p class="mt-2 text-sm text-todde-dark/60">Try adjusting the price range or removing some filters to see more vehicles.</p>
+          <a href="?" class="mt-6 inline-flex items-center justify-center rounded-2xl bg-todde-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-todde-blue-dark">Reset filters</a>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_other_pages %}
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        {% with base_query=filters_querystring %}
+          {% if page_obj.has_previous %}
+          <a href="?{{ base_query }}{% if base_query %}&amp;{% endif %}sort={{ selected_sort }}&amp;page={{ page_obj.previous_page_number }}" class="inline-flex items-center rounded-full border border-todde-blue/30 px-3 py-1 text-xs font-semibold text-todde-blue hover:bg-todde-blue hover:text-white">Previous</a>
+          {% endif %}
+          {% for page in page_obj.paginator.page_range %}
+            {% if page == page_obj.number %}
+            <span class="inline-flex items-center rounded-full bg-todde-blue px-3 py-1 text-xs font-semibold text-white">{{ page }}</span>
+            {% elif page <= page_obj.number|add:2 and page >= page_obj.number|add:-2 %}
+            <a href="?{{ base_query }}{% if base_query %}&amp;{% endif %}sort={{ selected_sort }}&amp;page={{ page }}" class="inline-flex items-center rounded-full border border-transparent px-3 py-1 text-xs font-semibold text-todde-dark/60 hover:border-todde-blue/30 hover:text-todde-blue">{{ page }}</a>
+            {% elif page == 1 or page == page_obj.paginator.num_pages %}
+            <a href="?{{ base_query }}{% if base_query %}&amp;{% endif %}sort={{ selected_sort }}&amp;page={{ page }}" class="inline-flex items-center rounded-full border border-transparent px-3 py-1 text-xs font-semibold text-todde-dark/60 hover:border-todde-blue/30 hover:text-todde-blue">{{ page }}</a>
+            {% elif forloop.first or forloop.last %}
+            <span class="px-2 text-xs text-todde-dark/40">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+          <a href="?{{ base_query }}{% if base_query %}&amp;{% endif %}sort={{ selected_sort }}&amp;page={{ page_obj.next_page_number }}" class="inline-flex items-center rounded-full border border-todde-blue/30 px-3 py-1 text-xs font-semibold text-todde-blue hover:bg-todde-blue hover:text-white">Next</a>
+          {% endif %}
+        {% endwith %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
