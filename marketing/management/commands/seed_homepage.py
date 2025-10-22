@@ -54,10 +54,9 @@ class Command(BaseCommand):
 
 	def _seed_navigation(self) -> None:
 		links = [
-			{"label": "Registered Cars", "href": "/registered-cars/", "description": "Browse locally registered inventory", "order": 1},
-			{"label": "Foreign Used", "href": "/foreign-used/", "description": "Tokunbo vehicles ready to import", "order": 2},
-			{"label": "All Cars", "href": "/cars/", "description": "Entire Todde marketplace", "order": 3},
-			{"label": "Car Finance", "href": "/financing/", "description": "Explore financing plans", "order": 4},
+			{"label": "New Cars", "href": "/new-cars/", "description": "Browse new vehicle inventory", "order": 1},
+			{"label": "Used Cars", "href": "/used-cars/", "description": "Browse used vehicle inventory", "order": 2},
+			{"label": "Car Financing", "href": "/financing/", "description": "Explore financing plans", "order": 3},
 		]
 		for item in links:
 			NavigationLink.objects.update_or_create(
@@ -118,17 +117,42 @@ class Command(BaseCommand):
 			)
 
 	def _seed_hero(self) -> None:
-		hero_defaults = {
-			"badge_label": "Todde Marketplace",
-			"title": "Auto Financing That Gets You On The Road Faster",
-			"subtitle": "Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront.",
-			"primary_cta_label": "Discover more",
-			"primary_cta_url": "/financing/",
-			"image_url": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80",
-			"order": 1,
-			"is_active": True,
-		}
-		HomepageHero.objects.update_or_create(order=1, defaults=hero_defaults)
+		hero_slides = [
+			{
+				"badge_label": "",
+				"title": "Auto Financing That Gets You On The Road Faster",
+				"subtitle": "Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront.",
+				"primary_cta_label": "Discover more",
+				"primary_cta_url": "/financing/",
+				"image_url": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80",
+				"order": 1,
+				"is_active": True,
+			},
+			{
+				"badge_label": "",
+				"title": "Quality Cars, Certified by Experts",
+				"subtitle": "Browse our handpicked inventory of vehicles that have passed rigorous 200-point inspections by Todde engineers.",
+				"primary_cta_label": "Browse inventory",
+				"primary_cta_url": "/cars/",
+				"image_url": "https://images.unsplash.com/photo-1549921296-3b4a6b789555?auto=format&fit=crop&w=1600&q=80",
+				"order": 2,
+				"is_active": True,
+			},
+			{
+				"badge_label": "",
+				"title": "Drive Home Today with 30% Down",
+				"subtitle": "Low upfront payments, flexible terms up to 36 months, and bundled insurance make car ownership accessible for everyone.",
+				"primary_cta_label": "Get financing",
+				"primary_cta_url": "/financing/",
+				"image_url": "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1600&q=80",
+				"order": 3,
+				"is_active": True,
+			}
+		]
+		
+		for hero_data in hero_slides:
+			order = hero_data.pop("order")
+			HomepageHero.objects.update_or_create(order=order, defaults=hero_data)
 
 	def _seed_categories(self) -> None:
 		categories = [

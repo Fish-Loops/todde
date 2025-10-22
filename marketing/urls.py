@@ -14,4 +14,5 @@ urlpatterns = [
     path("api/car-manufacturers/", views.car_manufacturers_api, name="api_car_manufacturers"),
     path("api/car-models/", views.car_models_api, name="api_car_models"),
     path("api/car-variants/", views.car_variants_api, name="api_car_variants"),
+    path("api/search/", views.search_api, name="api_search"),
 ]
