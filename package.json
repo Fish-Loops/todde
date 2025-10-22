@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "dev:css": "tailwindcss -i ./assets/css/todde.css -o ./static/css/todde.css --watch",
-    "build:css": "tailwindcss -i ./assets/css/todde.css -o ./static/css/todde.css --minify"
+    "build:css": "tailwindcss -i ./assets/css/todde.css -o ./static/css/todde.css --minify",
+    "copy:js": "cp -r assets/js/* static/js/",
+    "build": "npm run build:css && npm run copy:js",
+    "dev": "npm run copy:js && npm run dev:css"
   },
   "keywords": [],
   "author": "",

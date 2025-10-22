@@ -159,5 +159,38 @@
       }
       updatePrice(variant);
     });
+
+    // Handle "View more" button to filter inventory
+    const viewMoreButton = document.querySelector("#view-more-filtered");
+    if (viewMoreButton) {
+      viewMoreButton.addEventListener("click", (event) => {
+        event.preventDefault(); // Prevent any default behavior
+        
+        const manufacturerId = manufacturerSelect.value;
+        const modelId = modelSelect.value;
+        const selectedOption = yearSelect.querySelector(`option[value="${yearSelect.value}"]`);
+        const year = selectedOption ? selectedOption.dataset.year : '';
+        
+        console.log('View More clicked:', { manufacturerId, modelId, year });
+        
+        // Build URL with filter parameters
+        const url = new URL("/cars/", window.location.origin);
+        
+        if (manufacturerId) {
+          url.searchParams.append("manufacturer", manufacturerId);
+        }
+        if (modelId) {
+          url.searchParams.append("model", modelId);
+        }
+        if (year) {
+          url.searchParams.append("year", year);
+        }
+        
+        console.log('Navigating to:', url.toString());
+        
+        // Navigate to filtered inventory page
+        window.location.href = url.toString();
+      });
+    }
   });
 })();

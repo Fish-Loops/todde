@@ -279,17 +279,17 @@
     font-size: 1rem;
     font-weight: 600;
     color: #fff;
-    background-color: #ff7a00;
+    background-color: #383838;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     transition: all 0.15s ease-in-out;
   }
 
   .todde-button-accent:hover {
-    background-color: #e96500;
+    background-color: rgba(56, 56, 56, 0.8);
   }
 
   .todde-button-accent:focus-visible {
-    outline: 2px solid #ff7a00;
+    outline: 2px solid #383838;
     outline-offset: 2px;
   }
 
@@ -415,7 +415,7 @@
   }
 
   .vehicle-highlight-icon {
-    color: #f47c1f;
+    color: #383838;
   }
 
   .vehicle-highlight-empty {

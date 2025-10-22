@@ -45,7 +45,7 @@ def _build_section_copy_map():
 
 def homepage(request):
 	section_copy = _build_section_copy_map()
-	hero = HomepageHero.objects.filter(is_active=True).order_by("order").first()
+	hero_slides = HomepageHero.objects.filter(is_active=True).order_by("order")
 	categories = HomepageCategory.objects.filter(is_active=True).order_by("order")
 	featured = (
 		HomepageFeaturedVehicle.objects.filter(is_active=True)
@@ -86,7 +86,7 @@ def homepage(request):
 
 	context = {
 		"nav_links": nav_links,
-		"hero": hero,
+		"hero_slides": hero_slides,
 		"categories": categories,
 		"featured_vehicles": featured_list,
 		"value_props": value_props,
@@ -356,6 +356,48 @@ def _resolve_inventory_copy(
 	}
 
 
+def _generate_dynamic_title(selected_filters: dict[str, object], default_title: str) -> str:
+	"""Generate a dynamic title based on applied filters."""
+	manufacturer_id = selected_filters.get("manufacturer")
+	model_id = selected_filters.get("model")
+	year = selected_filters.get("year")
+	
+	title_parts = []
+	
+	# Get manufacturer name if filtered by manufacturer
+	if manufacturer_id:
+		try:
+			manufacturer = CarManufacturer.objects.get(id=manufacturer_id, is_active=True)
+			title_parts.append(manufacturer.name)
+		except CarManufacturer.DoesNotExist:
+			pass
+	
+	# Get model name if filtered by model
+	if model_id:
+		try:
+			model = CarModel.objects.get(id=model_id, is_active=True)
+			if not manufacturer_id:  # If manufacturer wasn't already added
+				title_parts.append(model.manufacturer.name)
+			title_parts.append(model.name)
+		except CarModel.DoesNotExist:
+			pass
+	
+	# Add year if specified
+	if year:
+		title_parts.append(str(year))
+	
+	# Build the title
+	if title_parts:
+		if len(title_parts) == 1:
+			return f"{title_parts[0]} Cars"
+		elif len(title_parts) == 2:
+			return f"{title_parts[0]} {title_parts[1]} Cars"
+		else:
+			return f"{' '.join(title_parts)} Cars"
+	
+	return default_title
+
+
 def _build_inventory_context(
 	request,
 	*,
@@ -436,6 +478,24 @@ def _build_inventory_context(
 		filtered_queryset = filtered_queryset.filter(transmission__in=transmission_values)
 		selected_filters["transmission"] = transmission_values
 
+	# Manufacturer filtering
+	manufacturer_id = _parse_int(request.GET.get("manufacturer"))
+	if manufacturer_id is not None:
+		filtered_queryset = filtered_queryset.filter(model__manufacturer__id=manufacturer_id)
+		selected_filters["manufacturer"] = manufacturer_id
+
+	# Model filtering
+	model_id = _parse_int(request.GET.get("model"))
+	if model_id is not None:
+		filtered_queryset = filtered_queryset.filter(model__id=model_id)
+		selected_filters["model"] = model_id
+
+	# Exact year filtering (different from year range)
+	year = _parse_int(request.GET.get("year"))
+	if year is not None:
+		filtered_queryset = filtered_queryset.filter(year=year)
+		selected_filters["year"] = year
+
 	sort_key = request.GET.get("sort", "price_low_high")
 	sort_mappings = {
 		"price_low_high": "price",
@@ -462,9 +522,12 @@ def _build_inventory_context(
 		variant.display_image_alt = image_info.alt_text or f"{variant.model.manufacturer.name} {variant.model.name}"
 		variant.display_image_is_placeholder = image_info.is_placeholder
 
+	# Generate dynamic title based on filters
+	dynamic_title = _generate_dynamic_title(selected_filters, default_page_title)
+
 	copy = _resolve_inventory_copy(
 		page_slug,
-		default_title=default_page_title,
+		default_title=dynamic_title,
 		default_intro=default_intro_text,
 		default_meta_title=default_meta_title,
 		default_meta_description=default_meta_description,
@@ -749,3 +812,93 @@ def car_variants_api(request):
 			"variants": data,
 		}
 	)
+
+
+@require_GET
+def search_api(request):
+	query = request.GET.get("q", "").strip()
+	
+	if not query:
+		return JsonResponse({"results": []})
+	
+	if len(query) < 2:
+		return JsonResponse({"results": []})
+	
+	# Search across manufacturers, models, and variants
+	results = []
+	
+	# Search manufacturers
+	manufacturers = CarManufacturer.objects.filter(
+		is_active=True,
+		name__icontains=query
+	).order_by("name")[:5]
+	
+	for manufacturer in manufacturers:
+		results.append({
+			"type": "manufacturer",
+			"id": manufacturer.id,
+			"title": manufacturer.name,
+			"subtitle": "Manufacturer",
+			"url": f"/cars/?manufacturer={manufacturer.slug}",
+			"image": None
+		})
+	
+	# Search models
+	models = CarModel.objects.filter(
+		is_active=True,
+		manufacturer__is_active=True,
+		name__icontains=query
+	).select_related("manufacturer").order_by("name")[:5]
+	
+	for model in models:
+		results.append({
+			"type": "model",
+			"id": model.id,
+			"title": f"{model.manufacturer.name} {model.name}",
+			"subtitle": "Model",
+			"url": f"/cars/?model={model.slug}",
+			"image": None
+		})
+	
+	# Search variants (cars)
+	variants = CarVariant.objects.filter(
+		is_active=True,
+		model__is_active=True,
+		model__manufacturer__is_active=True
+	).select_related("model", "model__manufacturer").prefetch_related(
+		Prefetch(
+			"images",
+			queryset=CarVariantImage.objects.filter(is_active=True).order_by("order", "id"),
+		)
+	)
+	
+	# Filter variants by manufacturer name, model name, year, or trim
+	from django.db.models import Q
+	variant_filter = (
+		Q(model__manufacturer__name__icontains=query) |
+		Q(model__name__icontains=query) |
+		Q(trim__icontains=query) |
+		Q(year__icontains=query)
+	)
+	
+	variants = variants.filter(variant_filter).order_by("-year", "model__manufacturer__name", "model__name")[:8]
+	
+	placeholder_image_url = static("images/vehicle-placeholder.svg")
+	
+	for variant in variants:
+		# Get primary image
+		image_info = _resolve_variant_primary_image(variant, placeholder_image_url)
+		
+		results.append({
+			"type": "variant",
+			"id": variant.id,
+			"title": f"{variant.model.manufacturer.name} {variant.model.name} {variant.year}",
+			"subtitle": f"{variant.trim} • {variant.formatted_price}",
+			"url": f"/cars/{variant.id}/",
+			"image": image_info.source_url if not image_info.is_placeholder else None
+		})
+	
+	# Limit total results
+	results = results[:10]
+	
+	return JsonResponse({"results": results})

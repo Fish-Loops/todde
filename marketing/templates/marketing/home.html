@@ -9,10 +9,10 @@
   <div class="container py-10">
     <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
       <aside class="todde-card w-full overflow-hidden bg-white p-0 text-todde-dark shadow-card">
-        <div class="bg-[#FF7A00] px-6 py-4 text-white">
+        <div class="bg-todde-dark px-6 py-4 text-white">
           <div class="flex items-center gap-3">
             {% marketing_icon 'heroicons:bars-3' 'h-5 w-5 text-white' %}
-            <p class="text-sm font-semibold uppercase tracking-widest">Product Category</p>
+            <p class="text-sm font-semibold uppercase tracking-widest">Quick Estimate</p>
           </div>
         </div>
         <div class="px-6 pb-6 pt-5">
@@ -76,45 +76,92 @@
             <p class="hidden text-xs font-medium text-red-600" data-role="car-feedback"></p>
 
             <div class="pt-2">
-              <a href="/#inventory" class="inline-flex w-full items-center justify-center gap-2 bg-todde-blue px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white transition hover:bg-todde-blue/90">
-                Browse inventory
+              <button type="button" id="view-more-filtered" class="inline-flex w-full items-center justify-center gap-2 bg-todde-blue px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white transition hover:bg-todde-blue/90">
+                View more
                 {% marketing_icon 'heroicons:arrow-right' 'h-4 w-4 text-white' %}
-              </a>
+              </button>
             </div>
           </form>
         </div>
       </aside>
 
       <div class="space-y-6">
-        <div class="relative isolate overflow-hidden  bg-gradient-to-r from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] text-white shadow-card">
-          {% if hero and hero.image_url %}
-            <img
-              src="{{ hero.image_url }}"
-              alt="{{ hero.title|default:'Featured vehicle' }}"
-              class="absolute inset-y-0 right-0 h-full w-3/5 object-cover opacity-90 mix-blend-lighten"
-            />
-          {% endif %}
-          <div class="relative z-10 max-w-xl px-10 py-14">
-            {% if hero and hero.badge_label %}
-              <span class="inline-flex items-center gap-2  bg-todde-blue px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                {{ hero.badge_label }}
-              </span>
-            {% endif %}
-            <h1 class="mt-6 text-4xl font-bold leading-tight lg:text-5xl">
-              {{ hero.title|default:"Auto Financing That Gets You On The Road Faster" }}
-            </h1>
-            <p class="mt-4 text-base text-white/80">
-              {{ hero.subtitle|default:"Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront." }}
-            </p>
-            <div class="mt-8">
-              {% if hero and hero.primary_cta_label and hero.primary_cta_url %}
-                <a href="{{ hero.primary_cta_url }}" class="inline-flex items-center justify-center  bg-todde-blue px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-todde-blue-dark">
-                  {{ hero.primary_cta_label }}
-                </a>
+        <!-- Hero Slider -->
+        <div class="relative isolate overflow-hidden bg-gradient-to-r from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] text-white shadow-card">
+          {% if hero_slides %}
+            <div class="hero-slider relative min-h-[500px]">
+              {% for hero in hero_slides %}
+                <div class="hero-slide {% if forloop.first %}active{% endif %} absolute inset-0 transition-opacity duration-500 ease-in-out {% if not forloop.first %}opacity-0{% else %}opacity-100{% endif %}">
+                  {% if hero.image_url %}
+                    <img
+                      src="{{ hero.image_url }}"
+                      alt="{{ hero.title|default:'Featured vehicle' }}"
+                      class="absolute inset-y-0 right-0 h-full w-3/5 object-cover opacity-90 mix-blend-lighten"
+                      loading="eager"
+                    />
+                  {% endif %}
+                  <div class="relative z-10 max-w-xl px-10 py-14">
+                    {% if hero.badge_label %}
+                      <span class="inline-flex items-center gap-2 bg-todde-blue px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                        {{ hero.badge_label }}
+                      </span>
+                    {% endif %}
+                    <h1 class="mt-6 text-4xl font-bold leading-tight text-white lg:text-5xl">
+                      {{ hero.title|default:"Auto Financing That Gets You On The Road Faster" }}
+                    </h1>
+                    <p class="mt-4 text-base text-white/80">
+                      {{ hero.subtitle|default:"Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront." }}
+                    </p>
+                    <div class="mt-8">
+                      {% if hero.primary_cta_label and hero.primary_cta_url %}
+                        <a href="#" class="inline-flex items-center justify-center bg-todde-blue/50 px-8 py-4 text-base font-semibold text-white shadow-lg cursor-not-allowed" title="Coming Soon">
+                          {{ hero.primary_cta_label }}
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              
+              <!-- Slider Navigation -->
+              {% if hero_slides|length > 1 %}
+                <div class="absolute bottom-6 left-10 z-20 flex space-x-2">
+                  {% for hero in hero_slides %}
+                    <button class="hero-dot w-3 h-3 rounded-full transition-all duration-300 {% if forloop.first %}bg-white{% else %}bg-white/40{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+                  {% endfor %}
+                </div>
+                
+                <!-- Arrow Navigation -->
+                <button class="hero-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition hover:bg-black/40">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+                <button class="hero-next absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition hover:bg-black/40">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
               {% endif %}
             </div>
+          {% else %}
+            <!-- Fallback content if no hero slides -->
+            <div class="relative z-10 max-w-xl px-10 py-14 min-h-[500px] flex flex-col justify-center">
+              <h1 class="text-4xl font-bold leading-tight text-white lg:text-5xl">
+                Auto Financing That Gets You On The Road Faster
+              </h1>
+              <p class="mt-4 text-base text-white/80">
+                Discover certified vehicles, compare transparent repayment plans, and secure Todde financing with as little as 30% upfront.
+              </p>
+              <div class="mt-8">
+                <span class="inline-flex items-center justify-center bg-todde-blue/50 px-8 py-4 text-base font-semibold text-white cursor-not-allowed">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          {% endif %}
             {% if brand_metrics %}
-              <dl class="mt-10 grid gap-6 sm:grid-cols-3">
+              <dl class="mt-10 mb-[2rem] px-10 grid gap-6 sm:grid-cols-3">
                 {% for metric in brand_metrics %}
                   <div>
                     <dt class="text-sm uppercase tracking-widest text-white/60">{{ metric.label }}</dt>
@@ -135,32 +182,7 @@
   </div>
 </div>
 
-<section id="inventory" class="container py-16">
-  {% with copy=section_copy.categories %}
-    <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h2 class="todde-section-title">{{ copy.heading|default:"Browse by category" }}</h2>
-        <p class="todde-subtitle">{{ copy.subheading|default:"Find the perfect car for work, family, or adventure." }}</p>
-      </div>
-      {% if copy.cta_label and copy.cta_url %}
-        <a href="{{ copy.cta_url }}" class="todde-button-secondary">{{ copy.cta_label }}</a>
-      {% endif %}
-    </div>
-  {% endwith %}
-  <div class="mt-10 grid gap-4 justify-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    {% for category in categories %}
-      <article class="todde-card group mx-auto flex w-full max-w-[280px] flex-col items-center gap-4  bg-white px-6 py-8 text-center transition duration-150 hover:-translate-y-1">
-  <span class="inline-flex h-16 w-16 items-center justify-center  border-4 border-transparent bg-todde-blue/10 text-todde-blue shadow-subtle transition group-hover:border-todde-blue">
-          {% marketing_icon category.icon 'w-8 h-8' %}
-        </span>
-        <h3 class="text-base font-semibold text-todde-blue">{{ category.name }}</h3>
-        <p class="text-sm text-todde-dark/70">{{ category.description }}</p>
-      </article>
-    {% endfor %}
-  </div>
-</section>
-
-<section class="container py-16" aria-labelledby="featured-cars">
+<section class="container py-8" aria-labelledby="featured-cars">
   {% with copy=section_copy.featured %}
     <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
       <div>
@@ -173,36 +195,42 @@
     </div>
   {% endwith %}
   <div class="mt-10 grid gap-8 lg:grid-cols-4 md:grid-cols-2">
-    {% for vehicle in featured_vehicles %}
-      <article class="todde-card overflow-hidden ">
-        <div class="relative">
-          <img src="{{ vehicle.display_image_url }}" alt="{{ vehicle.display_image_alt|default:vehicle.name }}" class="h-56 w-full object-cover" />
-          <span class="absolute left-4 top-4  bg-todde-blue px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">{{ vehicle.badge }}</span>
+    {% for vehicle in featured_vehicles|slice:":4" %}
+      <article class="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+        <div class="relative overflow-hidden">
+          <img src="{{ vehicle.display_image_url }}" alt="{{ vehicle.display_image_alt|default:vehicle.name }}" class="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <span class="absolute left-4 top-4 bg-todde-blue px-3 py-2 text-xs font-bold uppercase tracking-wider text-white rounded-full shadow-lg">{{ vehicle.badge }}</span>
+          <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent"></div>
         </div>
-        <div class="space-y-4 p-6">
-          <div class="space-y-1">
-            <h3 class="text-xl font-semibold text-todde-blue">{{ vehicle.name }}</h3>
-            <p class="text-sm text-todde-dark/60">{{ vehicle.location }}</p>
+        <div class="relative px-6 py-6 space-y-4">
+          <div class="space-y-2">
+            <h3 class="text-xl font-bold text-todde-dark group-hover:text-todde-blue transition-colors duration-200">{{ vehicle.name }}</h3>
           </div>
-          <div class="space-y-1">
+          <div class="flex items-center justify-between">
             {% if vehicle.resolved_price %}
-              <p class="text-lg font-bold text-todde-dark">{{ vehicle.resolved_price }}</p>
+              <p class="text-lg font-bold text-todde-blue">{{ vehicle.resolved_price }}</p>
             {% endif %}
-            {% if vehicle.resolved_payment_plan %}
-              <p class="text-sm text-todde-dark/70">{{ vehicle.resolved_payment_plan }}</p>
-            {% endif %}
-          </div>
-          <div class="flex items-center justify-between text-sm">
-            <span class="inline-flex items-center gap-2 font-semibold text-todde-blue">
-              {% marketing_icon 'heroicons:check' 'w-5 h-5 text-todde-blue' %}
-              Todde Certified
-            </span>
-            <a href="/financing/" class="text-sm font-semibold text-todde-blue hover:text-todde-blue-dark">View plan &rarr;</a>
+            <div class="flex items-center space-x-1">
+              <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span class="text-xs font-medium text-green-600 uppercase tracking-wide">Available</span>
+            </div>
           </div>
         </div>
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-todde-blue via-todde-blue-dark to-todde-blue transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
       </article>
     {% endfor %}
   </div>
+  
+  <!-- Show More Button -->
+  {% if featured_vehicles|length > 4 %}
+    <div class="mt-8 text-center">
+      <a href="/cars/" class="inline-flex items-center gap-2 bg-todde-blue px-6 py-3 text-sm font-semibold uppercase tracking-widest text-white transition hover:bg-todde-blue/90">
+        Show more
+        {% marketing_icon 'heroicons:arrow-right' 'h-4 w-4 text-white' %}
+      </a>
+    </div>
+  {% endif %}
 </section>
 
 <section id="about" class="bg-todde-neutral py-20">
@@ -262,7 +290,7 @@
       <div class="space-y-4 text-center">
         {% with copy=section_copy.financing_cta %}
           {% if copy.cta_label and copy.cta_url %}
-            <a href="{{ copy.cta_url }}" class="todde-button-primary bg-white text-todde-blue hover:bg-white/80">{{ copy.cta_label }}</a>
+            <span class="todde-button-primary bg-white/50 text-todde-blue/50 cursor-not-allowed">Coming Soon</span>
           {% endif %}
           <p class="text-sm text-white/70">{{ copy.supporting_text|default:"Decisions within 48 hours • Powered by Todde partner banks" }}</p>
         {% endwith %}
