@@ -300,14 +300,55 @@
 </section>
 
 <section id="contact" class="bg-white py-20">
-  <div class="container grid gap-12 lg:grid-cols-2 lg:items-center">
-    <div class="space-y-6">
+  <div class="container grid gap-12 lg:grid-cols-2 lg:items-start">
+    <div class="space-y-6 pt-8">
       {% with copy=section_copy.contact %}
-        <h2 class="todde-section-title">{{ copy.heading|default:"Ready to get started?" }}</h2>
+        <h2 class="text-2xl font-semibold text-todde-blue">{{ copy.heading|default:"Ready to get started?" }}</h2>
         <p class="todde-subtitle">{{ copy.subheading|default:"Schedule a consultation with a Todde advisor to explore inventory, financing, and partner perks." }}</p>
       {% endwith %}
+      
+      <!-- Benefits List -->
+      <div class="space-y-4 pt-2">
+        <div class="flex items-start gap-3">
+          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-todde-blue/10 text-todde-blue mt-1">
+            {% marketing_icon 'heroicons:check' 'w-4 h-4' %}
+          </div>
+          <div>
+            <h4 class="font-semibold text-todde-dark">Expert Guidance</h4>
+            <p class="text-sm text-todde-dark/70">Get personalized recommendations from certified Todde advisors who understand your needs.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-todde-blue/10 text-todde-blue mt-1">
+            {% marketing_icon 'heroicons:check' 'w-4 h-4' %}
+          </div>
+          <div>
+            <h4 class="font-semibold text-todde-dark">Flexible Financing</h4>
+            <p class="text-sm text-todde-dark/70">Explore payment plans tailored to your budget, with competitive rates and transparent terms.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-todde-blue/10 text-todde-blue mt-1">
+            {% marketing_icon 'heroicons:check' 'w-4 h-4' %}
+          </div>
+          <div>
+            <h4 class="font-semibold text-todde-dark">Quality Assurance</h4>
+            <p class="text-sm text-todde-dark/70">Every vehicle is thoroughly inspected and verified by our engineering team before listing.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-todde-blue/10 text-todde-blue mt-1">
+            {% marketing_icon 'heroicons:check' 'w-4 h-4' %}
+          </div>
+          <div>
+            <h4 class="font-semibold text-todde-dark">Ongoing Support</h4>
+            <p class="text-sm text-todde-dark/70">Access maintenance support, insurance bundles, and warranty options throughout your ownership.</p>
+          </div>
+        </div>
+      </div>
+      
       {% if contact_cards %}
-        <div class="grid gap-6 sm:grid-cols-2">
+        <div class="grid gap-6 sm:grid-cols-2 pt-4">
           {% for card in contact_cards %}
             <div class=" border border-todde-blue/10 p-6 shadow-subtle">
               <p class="text-sm font-semibold uppercase tracking-widest text-todde-blue/80">{{ card.title }}</p>
