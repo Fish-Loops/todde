@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from collections import defaultdict
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Max, Min, Prefetch
+from django.db.models import Avg, Count, Max, Min, Q, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
@@ -332,6 +332,8 @@ def _resolve_inventory_copy(
 	default_meta_description: str,
 	default_kicker: str,
 	default_summary_label: str,
+	is_dynamic_title: bool = False,
+	is_dynamic_intro: bool = False,
 ):
 	config = InventoryPageConfig.objects.filter(slug=slug, is_active=True).first()
 	if not config:
@@ -345,10 +347,14 @@ def _resolve_inventory_copy(
 			"meta_description": default_meta_description,
 		}
 
+	# Use dynamic content when available, otherwise fall back to config
+	page_title = default_title if is_dynamic_title else config.resolved_page_title(default_title)
+	intro_text = default_intro if is_dynamic_intro else config.resolved_intro(default_intro)
+
 	return {
 		"config": config,
-		"page_title": config.resolved_page_title(default_title),
-		"intro_text": config.resolved_intro(default_intro),
+		"page_title": page_title,
+		"intro_text": intro_text,
 		"page_kicker": config.resolved_kicker(default_kicker),
 		"summary_badge_label": config.resolved_summary_label(default_summary_label),
 		"meta_title": config.resolved_meta_title(default_meta_title),
@@ -356,13 +362,120 @@ def _resolve_inventory_copy(
 	}
 
 
-def _generate_dynamic_title(selected_filters: dict[str, object], default_title: str) -> str:
+def _generate_dynamic_intro_text(selected_filters: dict, default_intro: str) -> str:
+	"""Generate dynamic intro text based on applied filters."""
+	category = selected_filters.get("category")
+	electric = selected_filters.get("electric")
+	listing_type = selected_filters.get("listing_type")
+	
+	# Handle electric vehicles first
+	if electric == "true":
+		return "Discover our collection of electric vehicles, featuring zero-emission technology and cutting-edge innovation. All electric cars are thoroughly inspected by Todde engineers for quality and reliability."
+	
+	# Handle listing type-based intro text
+	if listing_type:
+		listing_type_intros = {
+			"registered": "Browse Nigerian-registered vehicles with verified history and trusted ownership records. All registered cars are thoroughly inspected by Todde engineers.",
+			"foreign-used": "Shop Tokunbo cars sourced from top international auctions, freshly inspected by Todde engineers for quality and reliability.",
+		}
+		return listing_type_intros.get(listing_type, default_intro)
+	
+	if category:
+		category_intros = {
+			"sedan": "Explore our collection of sedan cars, perfect for city driving and comfort. All vehicles are thoroughly inspected by Todde engineers.",
+			"suv": "Discover spacious SUVs ideal for families and adventures. Browse certified vehicles with verified history and transparent pricing.",
+			"coupe": "Find stylish coupe cars that combine performance with elegance. Each vehicle is inspected for quality and reliability.",
+			"hatchback": "Shop fuel-efficient hatchback cars perfect for urban commuting. All vehicles come with Todde's quality guarantee.",
+			"truck": "Browse powerful trucks built for work and heavy-duty tasks. Certified vehicles with transparent documentation.",
+			"van": "Explore spacious vans ideal for business and large families. Quality-assured vehicles inspected by Todde.",
+		}
+		return category_intros.get(category, default_intro)
+	
+	return default_intro
+
+
+def _generate_dynamic_title(selected_filters: dict, default_title: str) -> str:
 	"""Generate a dynamic title based on applied filters."""
 	manufacturer_id = selected_filters.get("manufacturer")
 	model_id = selected_filters.get("model")
 	year = selected_filters.get("year")
+	category = selected_filters.get("category")
+	electric = selected_filters.get("electric")
+	listing_type = selected_filters.get("listing_type")
 	
 	title_parts = []
+	
+	# Handle electric vehicles first
+	if electric == "true":
+		base_title = "All Electric Cars"
+		
+		# Add manufacturer to electric if specified
+		if manufacturer_id:
+			try:
+				manufacturer = CarManufacturer.objects.get(id=manufacturer_id, is_active=True)
+				return f"All {manufacturer.name} Electric Cars"
+			except CarManufacturer.DoesNotExist:
+				pass
+		
+		# Add year to electric if specified
+		if year:
+			return f"All {year} Electric Cars"
+			
+		return base_title
+	
+	# Handle listing type-based titles
+	if listing_type:
+		listing_type_titles = {
+			"registered": "All Nigerian Used Cars",
+			"foreign-used": "All Foreign Used Cars",
+		}
+		base_title = listing_type_titles.get(listing_type, f"All {listing_type.replace('-', ' ').title()} Cars")
+		
+		# Add manufacturer to listing type if specified
+		if manufacturer_id:
+			try:
+				manufacturer = CarManufacturer.objects.get(id=manufacturer_id, is_active=True)
+				return f"All {manufacturer.name} {listing_type.replace('-', ' ').title()} Cars"
+			except CarManufacturer.DoesNotExist:
+				pass
+		
+		# Add category to listing type if specified
+		if category:
+			category_name = dict(CarModel.BodyType.choices).get(category, category.title())
+			return f"All {category_name} {listing_type.replace('-', ' ').title()} Cars"
+		
+		# Add year to listing type if specified
+		if year:
+			return f"All {year} {listing_type.replace('-', ' ').title()} Cars"
+			
+		return base_title
+	
+	# Handle category-based titles
+	if category:
+		category_titles = {
+			"sedan": "All Sedan Cars",
+			"suv": "All SUV Cars", 
+			"coupe": "All Coupe Cars",
+			"hatchback": "All Hatchback Cars",
+			"truck": "All Truck Cars",
+			"van": "All Van Cars",
+			"luxury": "All Luxury Cars",
+		}
+		base_title = category_titles.get(category, f"All {category.title()} Cars")
+		
+		# Add manufacturer to category if specified
+		if manufacturer_id:
+			try:
+				manufacturer = CarManufacturer.objects.get(id=manufacturer_id, is_active=True)
+				return f"All {manufacturer.name} {category.title()} Cars"
+			except CarManufacturer.DoesNotExist:
+				pass
+		
+		# Add year to category if specified
+		if year:
+			return f"All {year} {category.title()} Cars"
+			
+		return base_title
 	
 	# Get manufacturer name if filtered by manufacturer
 	if manufacturer_id:
@@ -389,15 +502,13 @@ def _generate_dynamic_title(selected_filters: dict[str, object], default_title: 
 	# Build the title
 	if title_parts:
 		if len(title_parts) == 1:
-			return f"{title_parts[0]} Cars"
+			return f"All {title_parts[0]} Cars"
 		elif len(title_parts) == 2:
-			return f"{title_parts[0]} {title_parts[1]} Cars"
+			return f"All {title_parts[0]} {title_parts[1]} Cars"
 		else:
-			return f"{' '.join(title_parts)} Cars"
+			return f"All {' '.join(title_parts)} Cars"
 	
 	return default_title
-
-
 def _build_inventory_context(
 	request,
 	*,
@@ -446,6 +557,54 @@ def _build_inventory_context(
 		for transmission_value, _ in CarVariant.Transmission.choices
 		if transmission_counts.get(transmission_value, 0) > 0
 	]
+
+	# Get available manufacturers
+	manufacturer_counts = {
+		entry["model__manufacturer__id"]: {
+			"name": entry["model__manufacturer__name"],
+			"count": entry["total"]
+		}
+		for entry in base_queryset.values("model__manufacturer__id", "model__manufacturer__name").annotate(total=Count("id"))
+		if entry["model__manufacturer__id"]
+	}
+	available_manufacturers = [
+		{
+			"value": manufacturer_id,
+			"label": manufacturer_data["name"],
+			"count": manufacturer_data["count"],
+		}
+		for manufacturer_id, manufacturer_data in manufacturer_counts.items()
+	]
+	available_manufacturers.sort(key=lambda x: x["label"])
+
+	# Get available models (optionally filtered by manufacturer)
+	model_queryset = base_queryset
+	selected_manufacturer = request.GET.get("manufacturer")
+	if selected_manufacturer:
+		try:
+			manufacturer_id = int(selected_manufacturer)
+			model_queryset = model_queryset.filter(model__manufacturer__id=manufacturer_id)
+		except (ValueError, TypeError):
+			pass
+	
+	model_counts = {
+		entry["model__id"]: {
+			"name": entry["model__name"],
+			"manufacturer": entry["model__manufacturer__name"],
+			"count": entry["total"]
+		}
+		for entry in model_queryset.values("model__id", "model__name", "model__manufacturer__name").annotate(total=Count("id"))
+		if entry["model__id"]
+	}
+	available_models = [
+		{
+			"value": model_id,
+			"label": f"{model_data['manufacturer']} {model_data['name']}",
+			"count": model_data["count"],
+		}
+		for model_id, model_data in model_counts.items()
+	]
+	available_models.sort(key=lambda x: x["label"])
 
 	selected_filters: dict[str, object] = {}
 	filtered_queryset = base_queryset
@@ -496,6 +655,23 @@ def _build_inventory_context(
 		filtered_queryset = filtered_queryset.filter(year=year)
 		selected_filters["year"] = year
 
+	# Special handling for electric vehicles (for now, filter by model names containing "electric" keywords)
+	electric_filter = request.GET.get("electric")
+	if electric_filter == "true":
+		# Filter by models that are likely electric (Tesla, Nissan Leaf, etc.)
+		electric_keywords = ["tesla", "leaf", "bolt", "i3", "i8", "model s", "model 3", "model x", "model y", "prius"]
+		electric_q = Q()
+		for keyword in electric_keywords:
+			electric_q |= Q(model__name__icontains=keyword) | Q(model__manufacturer__name__icontains=keyword)
+		filtered_queryset = filtered_queryset.filter(electric_q)
+		selected_filters["electric"] = "true"
+
+	# Listing type filtering (when passed as URL parameter)
+	listing_type_param = request.GET.get("listing_type")
+	if listing_type_param in dict(CarVariant.ListingType.choices):
+		filtered_queryset = filtered_queryset.filter(listing_type=listing_type_param)
+		selected_filters["listing_type"] = listing_type_param
+
 	sort_key = request.GET.get("sort", "price_low_high")
 	sort_mappings = {
 		"price_low_high": "price",
@@ -524,6 +700,20 @@ def _build_inventory_context(
 
 	# Generate dynamic title based on filters
 	dynamic_title = _generate_dynamic_title(selected_filters, default_page_title)
+	
+	# Check if we have any filters that would make the title dynamic
+	has_filters = bool(
+		selected_filters.get("category") or 
+		selected_filters.get("electric") or 
+		selected_filters.get("manufacturer") or 
+		selected_filters.get("model") or 
+		selected_filters.get("year") or
+		selected_filters.get("listing_type")
+	)
+	
+	# Force dynamic when we have filters, even if title matches default
+	is_dynamic_title = has_filters or (dynamic_title != default_page_title)
+	is_dynamic_intro = default_intro_text != "Discover certified cars inspected by Todde. Use the filters to zero in on the right price, year, transmission, or body style."
 
 	copy = _resolve_inventory_copy(
 		page_slug,
@@ -533,6 +723,8 @@ def _build_inventory_context(
 		default_meta_description=default_meta_description,
 		default_kicker=default_page_kicker,
 		default_summary_label=default_summary_badge_label,
+		is_dynamic_title=is_dynamic_title,
+		is_dynamic_intro=is_dynamic_intro,
 	)
 
 	context = {
@@ -546,9 +738,13 @@ def _build_inventory_context(
 		"available_stats": available_stats,
 		"available_categories": available_categories,
 		"available_transmissions": available_transmissions,
+		"available_manufacturers": available_manufacturers,
+		"available_models": available_models,
 		"selected_filters": selected_filters,
 		"selected_category": selected_filters.get("category"),
 		"selected_transmissions": selected_filters.get("transmission", []),
+		"selected_manufacturer": selected_filters.get("manufacturer"),
+		"selected_model": selected_filters.get("model"),
 		"selected_sort": selected_filters.get("sort", "price_low_high"),
 		"filters_querystring": encoded_filters,
 		"sort_options": [
@@ -567,12 +763,55 @@ def _build_inventory_context(
 
 
 def all_cars(request):
+	# Get selected filters for dynamic content
+	selected_filters = {}
+	
+	# Category filtering
+	category_value = request.GET.get("category")
+	if category_value in dict(CarModel.BodyType.choices):
+		selected_filters["category"] = category_value
+	
+	# Electric vehicle filtering
+	electric_filter = request.GET.get("electric")
+	if electric_filter == "true":
+		selected_filters["electric"] = "true"
+	
+	# Manufacturer filtering
+	manufacturer_id = _parse_int(request.GET.get("manufacturer"))
+	if manufacturer_id is not None:
+		selected_filters["manufacturer"] = manufacturer_id
+	
+	# Model filtering
+	model_id = _parse_int(request.GET.get("model"))
+	if model_id is not None:
+		selected_filters["model"] = model_id
+	
+	# Year filtering
+	year = _parse_int(request.GET.get("year"))
+	if year is not None:
+		selected_filters["year"] = year
+	
+	# Listing type filtering
+	listing_type_value = request.GET.get("listing_type")
+	if listing_type_value in dict(CarVariant.ListingType.choices):
+		selected_filters["listing_type"] = listing_type_value
+	
+	# Generate dynamic content
+	default_title = "All Cars"
+	default_intro = "Discover certified cars inspected by Todde. Use the filters to zero in on the right price, year, transmission, or body style."
+	
+	dynamic_title = _generate_dynamic_title(selected_filters, default_title)
+	dynamic_intro = _generate_dynamic_intro_text(selected_filters, default_intro)
+	
+	# Pass listing_type from filters to the context builder (for base queryset filtering)
+	context_listing_type = selected_filters.get("listing_type")
+	
 	context = _build_inventory_context(
 		request,
-		listing_type=None,
+		listing_type=context_listing_type,
 		page_slug=InventoryPageConfig.Slug.ALL,
-		default_page_title="All Cars",
-		default_intro_text="Discover certified cars inspected by Todde. Use the filters to zero in on the right price, year, transmission, or body style.",
+		default_page_title=dynamic_title,
+		default_intro_text=dynamic_intro,
 		default_meta_title="Todde Inventory | Browse certified cars",
 		default_meta_description="Explore certified vehicles across sedans, SUVs, and more. Filter by price, year, and transmission to find your next car.",
 	)

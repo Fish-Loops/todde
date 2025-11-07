@@ -50,8 +50,8 @@
               </a>
               <div class="absolute left-0 top-full w-48 bg-white border border-gray-200 shadow-lg rounded-md hidden group-hover:block z-50">
                 <div class="py-2">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">All Car Brands</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Electric Vehicles</a>
+                  <a href="{% url 'marketing:all_cars' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">All Car Brands</a>
+                  <a href="{% url 'marketing:all_cars' %}?electric=true" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Electric Vehicles</a>
                 </div>
               </div>
             </li>
@@ -64,15 +64,15 @@
               </a>
               <div class="absolute left-0 top-full w-48 bg-white border border-gray-200 shadow-lg rounded-md hidden group-hover:block z-50">
                 <div class="py-2">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Foreign Used</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Nigerian Used</a>
+                  <a href="{% url 'marketing:all_cars' %}?listing_type=foreign-used" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Foreign Used</a>
+                  <a href="{% url 'marketing:all_cars' %}?listing_type=registered" class="block px-4 py-2 text-sm text-gray-700 hover:bg-todde-blue hover:text-white transition">Nigerian Used</a>
                 </div>
               </div>
             </li>
 
             <!-- Car Financing -->
             <li>
-              <a href="#" class="transition duration-150 hover:text-todde-blue py-2">Car Financing</a>
+              <a href="{% url 'marketing:financing' %}" class="transition duration-150 hover:text-todde-blue py-2">Car Financing</a>
             </li>
           </ul>
         </nav>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load static humanize %}
 
 {% block content %}
 <section class="border-b border-todde-jet/10 bg-white/95 py-8">
@@ -63,6 +63,68 @@
                 />
               </div>
             </div>
+          </div>
+
+          <div class="space-y-3 border-b border-todde-jet/10 pb-6">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/60">Brand</p>
+            <div class="space-y-2">
+              {% for manufacturer in available_manufacturers %}
+              <label class="flex items-center justify-between rounded-lg border border-todde-jet/10 bg-white px-3 py-2 text-sm text-todde-dark/80 transition hover:border-todde-blue/40">
+                <span class="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="manufacturer"
+                    value="{{ manufacturer.value }}"
+                    {% if manufacturer.value == selected_manufacturer %}checked{% endif %}
+                    class="h-4 w-4 border-todde-jet/20 text-todde-blue focus:ring-todde-blue"
+                  />
+                  {{ manufacturer.label }}
+                </span>
+                <span class="text-xs text-todde-dark/50">({{ manufacturer.count }})</span>
+              </label>
+              {% empty %}
+              <p class="text-xs text-todde-dark/50">No brands available yet.</p>
+              {% endfor %}
+            </div>
+            {% if selected_manufacturer %}
+            <button
+              type="submit"
+              name="manufacturer"
+              value=""
+              class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-blue-light hover:text-todde-blue"
+            >Clear brand</button>
+            {% endif %}
+          </div>
+
+          <div class="space-y-3 border-b border-todde-jet/10 pb-6 model-filter-section">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-dark/60">Model</p>
+            <div class="space-y-2 model-options-container">
+              {% for model in available_models %}
+              <label class="flex items-center justify-between rounded-lg border border-todde-jet/10 bg-white px-3 py-2 text-sm text-todde-dark/80 transition hover:border-todde-blue/40">
+                <span class="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="model"
+                    value="{{ model.value }}"
+                    {% if model.value == selected_model %}checked{% endif %}
+                    class="h-4 w-4 border-todde-jet/20 text-todde-blue focus:ring-todde-blue"
+                  />
+                  {{ model.label }}
+                </span>
+                <span class="text-xs text-todde-dark/50">({{ model.count }})</span>
+              </label>
+              {% empty %}
+              <p class="text-xs text-todde-dark/50">No models available yet.</p>
+              {% endfor %}
+            </div>
+            {% if selected_model %}
+            <button
+              type="submit"
+              name="model"
+              value=""
+              class="text-xs font-semibold uppercase tracking-[0.25em] text-todde-blue-light hover:text-todde-blue"
+            >Clear model</button>
+            {% endif %}
           </div>
 
           <div class="space-y-3 border-b border-todde-jet/10 pb-6">
@@ -274,4 +336,9 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/inventory-filters.js' %}" defer></script>
 {% endblock %}
