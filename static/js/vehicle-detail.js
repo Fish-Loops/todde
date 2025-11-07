@@ -30,6 +30,144 @@
 
   let renderLoanSummary = null;
 
+  const initVehicleGallery = () => {
+    const galleryFrame = document.querySelector("[data-vehicle-gallery]");
+    if (!galleryFrame) {
+      if (window.console && typeof window.console.warn === "function") {
+        console.warn("[Todde] Vehicle gallery: frame not found");
+      }
+      return;
+    }
+
+    const mainImage = galleryFrame.querySelector("[data-gallery-image]");
+    if (!mainImage) {
+      if (window.console && typeof window.console.warn === "function") {
+        console.warn("[Todde] Vehicle gallery: main image not found");
+      }
+      return;
+    }
+
+    const prevButton = galleryFrame.querySelector("[data-gallery-prev]");
+    const nextButton = galleryFrame.querySelector("[data-gallery-next]");
+    const thumbScope = galleryFrame.parentElement || document;
+    const thumbnailElements = Array.from(thumbScope.querySelectorAll("[data-gallery-thumb]"));
+
+    if (window.console && typeof window.console.debug === "function") {
+      console.debug("[Todde] Vehicle gallery init", {
+        hasPrev: Boolean(prevButton),
+        hasNext: Boolean(nextButton),
+        thumbnailCount: thumbnailElements.length,
+      });
+    }
+
+    const images = [];
+    const normalizeText = (value, fallback = "") => {
+      if (typeof value !== "string") return fallback;
+      const trimmed = value.trim();
+      return trimmed.length ? trimmed : fallback;
+    };
+
+    const registerImage = (src, alt) => {
+      const normalizedSrc = normalizeText(src);
+      if (!normalizedSrc) return;
+      images.push({
+        src: normalizedSrc,
+        alt: normalizeText(alt, mainImage.getAttribute("alt") || ""),
+      });
+    };
+
+    registerImage(mainImage.dataset.initialSrc || mainImage.getAttribute("src"), mainImage.dataset.initialAlt || mainImage.getAttribute("alt"));
+
+    thumbnailElements.forEach((thumb) => {
+      const thumbImg = thumb.querySelector("img");
+      const source = thumb.dataset.src || thumb.getAttribute("href") || (thumbImg ? thumbImg.getAttribute("src") : "");
+      const alt = thumb.dataset.alt || (thumbImg ? thumbImg.getAttribute("alt") : "");
+      registerImage(source, alt);
+    });
+
+    if (images.length === 0) {
+      if (window.console && typeof window.console.warn === "function") {
+        console.warn("[Todde] Vehicle gallery: no images registered");
+      }
+      return;
+    }
+
+    let currentIndex = 0;
+
+    const updateActiveThumb = () => {
+      thumbnailElements.forEach((thumb, index) => {
+        const isActive = index + 1 === currentIndex;
+        thumb.classList.toggle("ring-2", isActive);
+        thumb.classList.toggle("ring-todde-blue", isActive);
+        thumb.classList.toggle("ring-offset-2", isActive);
+        thumb.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+    };
+
+    const showImage = (index) => {
+      if (images.length === 0) return;
+      const normalizedIndex = (index + images.length) % images.length;
+      const target = images[normalizedIndex];
+      if (!target) return;
+      currentIndex = normalizedIndex;
+      if (mainImage.getAttribute("src") !== target.src) {
+        mainImage.setAttribute("src", target.src);
+      }
+      mainImage.setAttribute("alt", target.alt || mainImage.getAttribute("alt") || "");
+      mainImage.dataset.galleryIndex = String(currentIndex);
+      if (window.console && typeof window.console.debug === "function") {
+        console.debug("[Todde] Vehicle gallery show", { index: currentIndex, src: target.src });
+      }
+      updateActiveThumb();
+    };
+
+    if (prevButton) {
+      prevButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (window.console && typeof window.console.debug === "function") {
+          console.debug("[Todde] Vehicle gallery prev", { from: currentIndex, to: currentIndex - 1 });
+        }
+        showImage(currentIndex - 1);
+      });
+    }
+
+    if (nextButton) {
+      nextButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (window.console && typeof window.console.debug === "function") {
+          console.debug("[Todde] Vehicle gallery next", { from: currentIndex, to: currentIndex + 1 });
+        }
+        showImage(currentIndex + 1);
+      });
+    }
+
+    thumbnailElements.forEach((thumb, index) => {
+      const targetIndex = index + 1;
+      thumb.dataset.galleryIndex = String(targetIndex);
+      thumb.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (window.console && typeof window.console.debug === "function") {
+          console.debug("[Todde] Vehicle gallery thumb", { targetIndex });
+        }
+        showImage(targetIndex);
+      });
+      thumb.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          if (window.console && typeof window.console.debug === "function") {
+            console.debug("[Todde] Vehicle gallery thumb key", { targetIndex, key: event.key });
+          }
+          showImage(targetIndex);
+        }
+      });
+    });
+
+    if (window.console && typeof window.console.debug === "function") {
+      console.debug("[Todde] Vehicle gallery ready", { imageCount: images.length });
+    }
+    showImage(0);
+  };
+
   const initLoanCalculator = () => {
     const form = document.getElementById("loan-calculator");
     if (!form) return;
@@ -233,6 +371,7 @@
   };
 
   ready(() => {
+    initVehicleGallery();
     initLoanCalculator();
     initLoanTabs();
   });

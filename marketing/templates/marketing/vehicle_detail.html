@@ -79,21 +79,44 @@
 
     <div class="order-1 flex flex-col gap-10 lg:order-2">
       <div class="space-y-6">
-        <div class="relative vehicle-gallery-frame shadow-card">
+        <div class="relative vehicle-gallery-frame shadow-card" data-vehicle-gallery>
           {% if primary_gallery_image %}
           <figure>
-            <img src="{{ primary_gallery_image.source_url }}" alt="{{ primary_gallery_image.alt_text|default:variant }}" class="h-[420px] w-full object-cover md:h-[460px]" />
+            <img
+              src="{{ primary_gallery_image.source_url }}"
+              alt="{{ primary_gallery_image.alt_text|default:variant }}"
+              class="h-[420px] w-full object-cover md:h-[460px]"
+              data-gallery-image
+              data-initial-src="{{ primary_gallery_image.source_url }}"
+              data-initial-alt="{{ primary_gallery_image.alt_text|default:variant }}"
+            />
           </figure>
           {% endif %}
-          <div class="absolute right-6 top-6 hidden gap-3 md:flex" aria-hidden="true">
-            <span class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle">‹</span>
-            <span class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle">›</span>
+          <div class="absolute right-6 top-6 hidden gap-3 md:flex" role="group" aria-label="Vehicle gallery navigation">
+            <button
+              type="button"
+              class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle"
+              data-gallery-prev
+              aria-label="Previous image"
+            >‹</button>
+            <button
+              type="button"
+              class="vehicle-gallery-nav-pill inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-todde-dark shadow-subtle"
+              data-gallery-next
+              aria-label="Next image"
+            >›</button>
           </div>
         </div>
         {% if gallery_thumbnails %}
         <div class="grid grid-cols-3 gap-3 md:grid-cols-5">
           {% for image in gallery_thumbnails %}
-          <a href="{{ image.source_url }}" class="vehicle-gallery-thumb group">
+          <a
+            href="{{ image.source_url }}"
+            class="vehicle-gallery-thumb group"
+            data-gallery-thumb
+            data-src="{{ image.source_url }}"
+            data-alt="{{ image.alt_text|default:variant }}"
+          >
             <img src="{{ image.source_url }}" alt="{{ image.alt_text|default:variant }}" class="h-24 w-full object-cover transition duration-300 group-hover:scale-105" />
           </a>
           {% endfor %}

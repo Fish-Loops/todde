@@ -261,8 +261,13 @@
       <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {% for variant in page_obj %}
         <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
+          <a
+            href="{% url 'marketing:vehicle_detail' variant.id %}"
+            class="absolute inset-0 z-10"
+            aria-label="View details for {{ variant.model.manufacturer.name }} {{ variant.model.name }} {{ variant.trim|default:'' }}"
+          ><span class="sr-only">View details</span></a>
           <div class="relative h-56 w-full overflow-hidden">
-            <div class="block h-full w-full cursor-default">
+            <div class="block h-full w-full cursor-pointer">
               <img
                 src="{{ variant.display_image }}"
                 alt="{{ variant.display_image_alt|default:variant.model.manufacturer.name }}"
@@ -280,7 +285,7 @@
           <div class="flex flex-1 flex-col gap-4 p-6">
             <div>
               <h3 class="text-xl font-bold text-todde-dark group-hover:text-todde-blue transition-colors duration-200">
-                <span class="cursor-default">
+                <span class="cursor-pointer">
                   {{ variant.model.manufacturer.name }} {{ variant.model.name }} {{ variant.trim|default:'' }}
                 </span>
               </h3>
