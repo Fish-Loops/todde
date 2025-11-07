@@ -17,7 +17,6 @@ __pycache__/
 /coverage/
 htmlcov/
 build/
-staticfiles/
 /media/
 !/media/.gitkeep
 
